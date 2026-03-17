@@ -468,8 +468,8 @@
         };
         const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate() + n); return r; };
         const getProjectName = (id) => { const p = projects.find(x => x.id === id); return p?.nom || ''; };
-        //const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return p?.division || ''; };
-        const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return divisions.find(y => y.id === p?.division).nom || ''; };
+        const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return p?.division || ''; };
+        //const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return divisions.find(y => y.id === p?.division).nom || ''; };
         const getProjectColor = (id) => { const p = projects.find(x => x.id === id); return p?.couleur || '#64748b'; };
         const getTeamMemberName = (id) => { const m = team.find(x => x.id === id); return m?.nom || ''; };
         // TEAM-01: Couleur personnalisée par membre
