@@ -393,9 +393,11 @@
         // ═══════════════════════════════════════════════════════════════════════
         const TASKFLOW_SCHEMA = {
             Team: [{ id: 'nom', type: 'Text' }, { id: 'email', type: 'Text' }, { id: 'avatar', type: 'Text' }, { id: 'role', type: 'Choice' }, { id: 'actif', type: 'Bool' }, { id: 'couleur', type: 'Text' }],  // TEAM-01: couleur membre
-            Projects: [{ id: 'nom', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateFin', type: 'Date' }, { id: 'responsable', type: 'Ref:Team' }, { id: 'actif', type: 'Bool' }],
+            Projects: [{ id: 'nom', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateFin', type: 'Date' }, { id: 'responsable', type: 'Ref:Team' }, { id: 'actif', type: 'Bool' }, { id: 'prt', type: 'Text' }, { id: 'moa', type: 'Ref:MOA' },{ id: 'acteursMOA', type: 'Text' }, { id: 'division', type: 'Ref:Divisions' }, { id: 'fonctionnel', type: 'Text' }, { id: 'dds', type: 'Text' }, { id: 'isp', type: 'Text' }, { id: 'fir', type: 'Text' }, { id: 'budget', type: 'Numeric' }, { id: 'fabricants', type: 'Text' }, { id: 'commentaire', type: 'Text' }],
             Tasks: [{ id: 'titre', type: 'Text' }, { id: 'description', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateEcheance', type: 'Date' }, { id: 'priorite', type: 'Choice' }, { id: 'statut', type: 'Choice' }, { id: 'progression', type: 'Numeric' }, { id: 'projet', type: 'Ref:Projects' }, { id: 'assignees', type: 'RefList:Team' }, { id: 'type', type: 'Choice' }, { id: 'dependDe', type: 'RefList:Tasks' }, { id: 'tags', type: 'ChoiceList' }, { id: 'estimationH', type: 'Numeric' }, { id: 'tempsPasse', type: 'Numeric' }, { id: 'couleur', type: 'Text' }, { id: 'subtasks', type: 'Text' }],  // FUT-01: subtasks en JSON
-            Divisions: [{ id: 'nom', type: 'Text' }, { id: 'libelle', type: 'Text' }, { id: 'couleur', type: 'Text' }]
+            Divisions: [{ id: 'nom', type: 'Text' }, { id: 'libelle', type: 'Text' }, { id: 'couleur', type: 'Text' }],
+            MOA: [{ id: 'nom', type: 'Text' }, { id: 'responsable', type: 'Text' }, { id: 'couleur', type: 'Text' }]
+
         };
         const PRIORITY_LABELS = { 1: 'Critique', 2: 'Haute', 3: 'Moyenne', 4: 'Basse' };
         const PRIORITY_COLORS = { 1: '#ef4444', 2: '#f59e0b', 3: '#3b82f6', 4: '#64748b' };
@@ -1119,6 +1121,9 @@
             ];
             divisions = [
                 { id: 1, nom: 'PN', libelle: 'Prestation Nature', couleur: '#4f46e5'},
+            ];
+            moa = [
+                { id: 1, nom: 'DTEST', responable: 'Sophie FONSEC', couleur: '#4f46e5'},
             ];
             updateFilterMenus();
             render();
