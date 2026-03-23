@@ -373,7 +373,7 @@
                 </div>
             </div>
             <div class="filter-dropdown" id="createTaskDropdown">
-                <button class="btn primary" onclick="toggleFilterMenu('create')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg> + Tâche ▾</button>
+                <button class="btn primary" onclick="toggleFilterMenu('create')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg> Tâche ▾</button>
                 <div class="filter-menu" id="filterCreateMenu">
                     <div class="filter-option" onclick="openCreatePanelWithCategory('architecture')">🏗️ Architecture</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('fonctionnel')">⚙️ Fonctionnel</div>
@@ -825,7 +825,7 @@
                     <span class="type-pill ${data.type === 'jalon' ? 'selected' : ''}" onclick="updateField('type','jalon')">◆ Jalon</span>
                     <span class="type-pill ${data.type === 'reunion' ? 'selected' : ''}" onclick="updateField('type','reunion')"> Réunion</span>
                 </div>
-                <input type="text" class="panel-title-edit" id="taskTitle" placeholder="${titlePlaceholder}" value="${escapeHtml(data.titre)}" oninput="updateField('titre', this.value, true)">
+                <input type="text" class="panel-title-edit" id="taskTitle" placeholder="${titlePlaceholder}" value="${escapeHtml(data.titre)}" oninput="updateField('titre', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();">
 
                 <div class="props-list">
                     <div class="prop-row">
@@ -884,7 +884,7 @@
                 <!-- Description / Ordre du jour / Critères -->
                 <div class="panel-section">
                     <div class="panel-section-header"><span class="panel-section-title">${descLabel}</span></div>
-                    <div class="form-group"><textarea class="form-textarea" placeholder="${descLabel}..." oninput="updateField('description', this.value, true)">${escapeHtml(data.description)}</textarea></div>
+                    <div class="form-group"><textarea class="form-textarea" placeholder="${descLabel}..." oninput="updateField('description', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();">${escapeHtml(data.description)}</textarea></div>
                 </div>
 
                 <!-- Prérequis (jalon) ou Checklist (tâche/réunion) -->
