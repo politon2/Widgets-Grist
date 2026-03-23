@@ -409,7 +409,7 @@
         // ═══════════════════════════════════════════════════════════════════════
         // STATE
         // ═══════════════════════════════════════════════════════════════════════
-        let tasks = [], team = [], projects = [], gristReady = false;
+        let tasks = [], team = [], projects = [], divisions = [], gristReady = false;
         let groupBy = 'statut', searchQuery = '', selectedTaskId = null;
         let filters = { project: [], division: [], priority: [], assignee: [], status: [] };  // KAN-01: Ajout filtre statut
         let panelState = { open: false, isNew: false, taskId: null, taskIndex: -1, columnTasks: [], columnKey: null, editData: null };
@@ -472,6 +472,7 @@
         const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return p?.division || ''; };
         //const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return divisions.find(y => y.id === p?.division).nom || ''; };
         const getProjectColor = (id) => { const p = projects.find(x => x.id === id); return p?.couleur || '#64748b'; };
+        const getDivisionName = (id) => { const d = divisions.find(x => x.id === id); return d?.nom || ''; };
         const getTeamMemberName = (id) => { const m = team.find(x => x.id === id); return m?.nom || ''; };
         // TEAM-01: Couleur personnalisée par membre
         const getTeamMemberColor = (id) => { const m = team.find(x => x.id === id); return m?.couleur || '#3e5de7'; };  // Défaut: primary
@@ -495,7 +496,7 @@
         function convertGristToRecords(data) { if (!data || Array.isArray(data)) return data || []; const cols = Object.keys(data); if (!cols.length) return []; const n = data[cols[0]]?.length || 0; const records = []; for (let i = 0; i < n; i++) { const rec = {}; cols.forEach(k => { rec[k] = data[k][i]; }); records.push(rec); } return records; }
         async function ensureSchema() { let created = 0; const tablesCreated = []; for (const [tableName, columns] of Object.entries(TASKFLOW_SCHEMA)) { let existingCols = [], tableExists = false; try { const data = await grist.docApi.fetchTable(tableName); existingCols = Object.keys(data).filter(c => c !== 'id' && c !== 'manualSort'); tableExists = true; } catch (e) { try { await grist.docApi.applyUserActions([['AddTable', tableName, columns.map(c => ({ id: c.id, type: c.type }))]]); tablesCreated.push(tableName); created++; continue; } catch (e2) { continue; } } if (tableExists) { const missing = columns.filter(c => !existingCols.includes(c.id)); for (const col of missing) { try { await grist.docApi.applyUserActions([['AddColumn', tableName, col.id, { type: col.type }]]); } catch (e) {} } } } if (tablesCreated.includes('Tasks')) await seedData(); }
         async function seedData() { const today = new Date(); const day = (d) => Math.floor(new Date(today.getFullYear(), today.getMonth(), today.getDate() + d).getTime() / 1000); try { await grist.docApi.applyUserActions([['AddRecord', 'Team', null, { nom: 'Alice Martin', actif: true }], ['AddRecord', 'Team', null, { nom: 'Bob Durant', actif: true }], ['AddRecord', 'Team', null, { nom: 'Claire Bernard', actif: true }]]); await grist.docApi.applyUserActions([['AddRecord', 'Projects', null, { nom: 'Refonte Portail', couleur: '#4f46e5', actif: true }], ['AddRecord', 'Projects', null, { nom: 'App Mobile', couleur: '#10b981', actif: true }]]); await grist.docApi.applyUserActions([['AddRecord', 'Tasks', null, { titre: 'Analyse', priorite: '1', statut: 'done', progression: 100, projet: 1, type: 'tache', dateDebut: day(-10), dateEcheance: day(-5), assignees: ['L', 1] }], ['AddRecord', 'Tasks', null, { titre: 'Dev Backend', priorite: '1', statut: 'inprogress', progression: 40, projet: 1, type: 'tache', dateDebut: day(-4), dateEcheance: day(10), assignees: ['L', 1, 2], dependDe: ['L', 1], estimationH: 32, tempsPasse: 12 }], ['AddRecord', 'Tasks', null, { titre: 'Design UI', priorite: '2', statut: 'review', progression: 80, projet: 2, type: 'tache', dateDebut: day(-5), dateEcheance: day(2), assignees: ['L', 3] }], ['AddRecord', 'Tasks', null, { titre: 'Livraison', priorite: '1', statut: 'todo', projet: 1, type: 'jalon', dateDebut: day(15), dateEcheance: day(15), dependDe: ['L', 2] }], ['AddRecord', 'Tasks', null, { titre: 'Tests QA', priorite: '3', statut: 'todo', projet: 2, type: 'tache', dateDebut: day(5), dateEcheance: day(12), tags: ['L', 'qa'] }]]); } catch (e) { console.log('Seed error:', e); } }
-        async function loadAllData() { try { tasks = convertGristToRecords(await grist.docApi.fetchTable('Tasks')); } catch (e) { tasks = []; } try { team = convertGristToRecords(await grist.docApi.fetchTable('Team')); } catch (e) { team = []; } try { projects = convertGristToRecords(await grist.docApi.fetchTable('Projects')); } catch (e) { projects = []; } gristReady = true; updateFilterMenus(); render(); }
+        async function loadAllData() { try { tasks = convertGristToRecords(await grist.docApi.fetchTable('Tasks')); } catch (e) { tasks = []; } try { team = convertGristToRecords(await grist.docApi.fetchTable('Team')); } catch (e) { team = []; } try { projects = convertGristToRecords(await grist.docApi.fetchTable('Projects')); } catch (e) { projects = []; } try { divisions = convertGristToRecords(await grist.docApi.fetchTable('Divisions')); } catch (e) { divisions = []; } gristReady = true; updateFilterMenus(); render(); }
 
         // ═══════════════════════════════════════════════════════════════════════
         // FILTERS
@@ -504,13 +505,16 @@
         function toggleFilterMenu(type) { document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('open')); document.getElementById(`filter${type.charAt(0).toUpperCase() + type.slice(1)}Menu`).classList.toggle('open'); }
         function updateFilterMenus() {
             document.getElementById('filterProjectMenu').innerHTML = projects.map(p => `<div class="filter-option" onclick="toggleFilterValue('project', ${p.id})"><input type="checkbox" ${filters.project.includes(p.id) ? 'checked' : ''}><span style="color:${p.couleur}">●</span> ${escapeHtml(p.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
-            document.getElementById('filterDivisionMenu').innerHTML = projects.map(p => `<div class="filter-option" onclick="toggleFilterValue('project', ${p.id})"><input type="checkbox" ${filters.project.includes(p.id) ? 'checked' : ''}><span style="color:${p.couleur}">●</span> ${escapeHtml(p.division)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
+            document.getElementById('filterDivisionMenu').innerHTML = [...new Set(projects.map(p => p.division).filter(d => d))].map(divisionId => {
+                const divisionName = getDivisionName(divisionId);
+                return `<div class="filter-option" onclick="toggleFilterValue('division', ${divisionId})"><input type="checkbox" ${filters.division.includes(divisionId) ? 'checked' : ''}>${escapeHtml(divisionName)}</div>`;
+            }).join('') || '<div class="filter-option">Aucun</div>';
             document.getElementById('filterPriorityMenu').innerHTML = [1,2,3,4].map(p => `<div class="filter-option" onclick="toggleFilterValue('priority', ${p})"><input type="checkbox" ${filters.priority.includes(p) ? 'checked' : ''}><span style="color:${PRIORITY_COLORS[p]}">●</span> ${PRIORITY_LABELS[p]}</div>`).join('');
             document.getElementById('filterAssigneeMenu').innerHTML = team.filter(m => m.actif !== false).map(m => `<div class="filter-option" onclick="toggleFilterValue('assignee', ${m.id})"><input type="checkbox" ${filters.assignee.includes(m.id) ? 'checked' : ''}>${escapeHtml(m.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
             // KAN-01: Filtre par statut
             document.getElementById('filterStatusMenu').innerHTML = Object.entries(STATUS_LABELS).map(([key, label]) => `<div class="filter-option" onclick="toggleFilterValue('status', '${key}')"><input type="checkbox" ${filters.status.includes(key) ? 'checked' : ''}>${label}</div>`).join('');
             document.getElementById('filterProjectBtn').classList.toggle('has-filter', filters.project.length > 0);
-            document.getElementById('filterDivisionBtn').classList.toggle('has-filter', filters.project.length > 0);
+            document.getElementById('filterDivisionBtn').classList.toggle('has-filter', filters.division.length > 0);
             document.getElementById('filterPriorityBtn').classList.toggle('has-filter', filters.priority.length > 0);
             document.getElementById('filterAssigneeBtn').classList.toggle('has-filter', filters.assignee.length > 0);
             document.getElementById('filterStatusBtn').classList.toggle('has-filter', filters.status.length > 0);
@@ -1087,7 +1091,7 @@
         // GEN-02: Broadcast des filtres vers les autres widgets
         function broadcastFilters() {
             if (gristReady && typeof grist !== 'undefined' && grist.setOption) {
-                try { grist.setOption('filters', { project: filters.project, priority: filters.priority, assignee: filters.assignee }); } 
+                try { grist.setOption('filters', { project: filters.project, division: filters.division, priority: filters.priority, assignee: filters.assignee, status: filters.status }); } 
                 catch (e) { console.log('setOption not available'); }
             }
         }
@@ -1106,9 +1110,9 @@
                 { id: 3, nom: 'Claire Bernard', actif: true, couleur: '#f59e0b' }
             ];
             projects = [
-                { id: 1, nom: 'Refonte Portail', couleur: '#4f46e5', actif: true },
-                { id: 2, nom: 'App Mobile', couleur: '#10b981', actif: true },
-                { id: 3, nom: 'API v2', couleur: '#f59e0b', actif: true }
+                { id: 1, nom: 'Refonte Portail', couleur: '#4f46e5', actif: true, division: 1 },
+                { id: 2, nom: 'App Mobile', couleur: '#10b981', actif: true, division: 1 },
+                { id: 3, nom: 'API v2', couleur: '#f59e0b', actif: true, division: 1 }
             ];
             const today = new Date();
             const day = (d) => dateToGrist(new Date(today.getFullYear(), today.getMonth(), today.getDate() + d));
