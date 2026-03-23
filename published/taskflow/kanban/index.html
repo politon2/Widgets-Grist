@@ -372,7 +372,15 @@
                     <div class="filter-option" onclick="exportPNG()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Image PNG</div>
                 </div>
             </div>
-            <button class="btn primary" onclick="openCreatePanel()">+ Tâche</button>
+            <div class="filter-dropdown" id="createTaskDropdown">
+                <button class="btn primary" onclick="toggleFilterMenu('create')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg> + Tâche ▾</button>
+                <div class="filter-menu" id="filterCreateMenu">
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('architecture')">🏗️ Architecture</div>
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('fonctionnel')">⚙️ Fonctionnel</div>
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('budget')">💰 Budget</div>
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('transfert')">🔄 Transfert</div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="main-content">
@@ -688,10 +696,27 @@
         }
 
         function openCreatePanel() { openCreatePanelForColumn(groupBy === 'statut' ? 'todo' : groupBy === 'priorite' ? '3' : projects.length ? String(projects[0].id) : 'none'); }
+        
+        function openCreatePanelWithCategory(categorie) {
+            const categoryPresets = {
+                architecture: { priorite: '1', type: 'tache', estimationH: 16, description: 'Tâche d\'architecture système' },
+                fonctionnel: { priorite: '2', type: 'tache', estimationH: 8, description: 'Tâche fonctionnelle' },
+                budget: { priorite: '3', type: 'tache', estimationH: 4, description: 'Tâche budgétaire' },
+                transfert: { priorite: '4', type: 'tache', estimationH: 2, description: 'Tâche de transfert' }
+            };
+            const preset = categoryPresets[categorie] || {};
+            openCreatePanelForColumnWithPreset(preset, categorie);
+            toggleFilterMenu('create'); // Fermer le menu après sélection
+        }
+        
+        function openCreatePanelForColumnWithPreset(preset, categorie) {
+            const colKey = groupBy === 'statut' ? 'todo' : groupBy === 'priorite' ? '3' : projects.length ? String(projects[0].id) : 'none';
+            openCreatePanelForColumn(colKey, preset, categorie);
+        }
 
-        function openCreatePanelForColumn(colKey) {
+        function openCreatePanelForColumn(colKey, extraPreset = {}, categorie = null) {
             const today = new Date();
-            let preset = {};
+            let preset = { ...extraPreset };
             if (groupBy === 'statut') preset.statut = colKey;
             else if (groupBy === 'priorite') preset.priorite = colKey;
             else if (groupBy === 'projet') preset.projet = colKey === 'none' ? null : parseInt(colKey);
@@ -699,7 +724,7 @@
             
             panelState = {
                 open: true, isNew: true, taskId: null, taskIndex: -1, columnTasks: [], columnKey: colKey,
-                editData: { titre: '', description: '', type: 'tache', priorite: preset.priorite || '3', statut: preset.statut || 'todo', progression: 0, dateDebut: dateToGrist(today), dateEcheance: dateToGrist(addDays(today, 7)), projet: preset.projet !== undefined ? preset.projet : (projects.length > 0 ? projects[0].id : null), assignees: [], dependDe: [], tags: [], estimationH: null, tempsPasse: null, subtasks: [] }
+                editData: { titre: '', description: preset.description || '', type: preset.type || 'tache', priorite: preset.priorite || '3', statut: preset.statut || 'todo', progression: 0, dateDebut: dateToGrist(today), dateEcheance: dateToGrist(addDays(today, 7)), projet: preset.projet !== undefined ? preset.projet : (projects.length > 0 ? projects[0].id : null), assignees: [], dependDe: [], tags: [], estimationH: preset.estimationH || null, tempsPasse: null, subtasks: [], categorie: categorie }
             };
             renderPanelTask();
             openPanel();
@@ -707,7 +732,7 @@
             setTimeout(() => document.getElementById('taskTitle')?.focus(), 100);
         }
 
-        function cloneTaskData(task) { return { titre: task.titre || '', description: task.description || '', type: task.type || 'tache', priorite: String(task.priorite || '3'), statut: task.statut || 'todo', progression: task.progression || 0, dateDebut: task.dateDebut, dateEcheance: task.dateEcheance, projet: task.projet || null, assignees: getAssignees(task), dependDe: getDependsOn(task), tags: getTags(task), estimationH: task.estimationH || null, tempsPasse: task.tempsPasse || null, subtasks: getSubtasks(task) }; }
+        function cloneTaskData(task) { return { titre: task.titre || '', description: task.description || '', type: task.type || 'tache', priorite: String(task.priorite || '3'), statut: task.statut || 'todo', progression: task.progression || 0, dateDebut: task.dateDebut, dateEcheance: task.dateEcheance, projet: task.projet || null, assignees: getAssignees(task), dependDe: getDependsOn(task), tags: getTags(task), estimationH: task.estimationH || null, tempsPasse: task.tempsPasse || null, subtasks: getSubtasks(task), categorie: task.categorie || null }; }
         
         // FIX: Synchroniser editData vers le task local dans tasks[]
         function syncLocalTask() {
@@ -730,6 +755,7 @@
             task.estimationH = data.estimationH;
             task.tempsPasse = data.tempsPasse;
             task.subtasks = subtasksToJson(data.subtasks);
+            task.categorie = data.categorie;
         }
 
         function navigatePanelTask(dir) {
@@ -1059,7 +1085,7 @@
             if (!data || panelState.isNew || !gristReady) return;
             if (data.dateDebut && data.dateEcheance && data.dateDebut > data.dateEcheance) { showToast('La date de début ne peut pas dépasser la date de fin', 'error'); return; }
             syncLocalTask();  // FIX: Synchroniser localement avant envoi API
-            const record = { titre: data.titre, description: data.description, type: data.type, priorite: data.priorite, statut: data.statut, progression: data.progression, dateDebut: data.dateDebut, dateEcheance: data.dateEcheance, projet: data.projet, assignees: toGristRefList(data.assignees), dependDe: toGristRefList(data.dependDe), tags: toGristChoiceList(data.tags), estimationH: data.estimationH, tempsPasse: data.tempsPasse, subtasks: subtasksToJson(data.subtasks) };
+            const record = { titre: data.titre, description: data.description, type: data.type, priorite: data.priorite, statut: data.statut, progression: data.progression, dateDebut: data.dateDebut, dateEcheance: data.dateEcheance, projet: data.projet, assignees: toGristRefList(data.assignees), dependDe: toGristRefList(data.dependDe), tags: toGristChoiceList(data.tags), estimationH: data.estimationH, tempsPasse: data.tempsPasse, subtasks: subtasksToJson(data.subtasks), categorie: data.categorie };
             try { await grist.docApi.applyUserActions([['UpdateRecord', 'Tasks', panelState.taskId, record]]); showSaveIndicator(); } catch (e) { showToast('Erreur sauvegarde', 'error'); }
         }
 
@@ -1067,7 +1093,7 @@
             const data = panelState.editData;
             if (!data || !data.titre?.trim()) { showToast('Titre requis', 'error'); return; }
             if (data.dateDebut && data.dateEcheance && data.dateDebut > data.dateEcheance) { showToast('La date de début ne peut pas dépasser la date de fin', 'error'); return; }
-            const record = { titre: data.titre, description: data.description || '', type: data.type || 'tache', priorite: data.priorite || '3', statut: data.statut || 'todo', progression: data.progression || 0, dateDebut: data.dateDebut, dateEcheance: data.dateEcheance, projet: data.projet, assignees: toGristRefList(data.assignees), dependDe: toGristRefList(data.dependDe), tags: toGristChoiceList(data.tags), estimationH: data.estimationH, tempsPasse: data.tempsPasse, subtasks: subtasksToJson(data.subtasks) };
+            const record = { titre: data.titre, description: data.description || '', type: data.type || 'tache', priorite: data.priorite || '3', statut: data.statut || 'todo', progression: data.progression || 0, dateDebut: data.dateDebut, dateEcheance: data.dateEcheance, projet: data.projet, assignees: toGristRefList(data.assignees), dependDe: toGristRefList(data.dependDe), tags: toGristChoiceList(data.tags), estimationH: data.estimationH, tempsPasse: data.tempsPasse, subtasks: subtasksToJson(data.subtasks), categorie: data.categorie };
             if (gristReady) {
                 try { await grist.docApi.applyUserActions([['AddRecord', 'Tasks', null, record]]); showToast('Créée', 'success'); await loadAllData(); closePanel(); } catch (e) { showToast('Erreur création', 'error'); }
             } else { record.id = Date.now(); tasks.push(record); showToast('Créée', 'success'); render(); closePanel(); }
