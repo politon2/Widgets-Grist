@@ -473,6 +473,7 @@
         //const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return divisions.find(y => y.id === p?.division).nom || ''; };
         const getProjectColor = (id) => { const p = projects.find(x => x.id === id); return p?.couleur || '#64748b'; };
         const getDivisionName = (id) => { const d = divisions.find(x => x.id === id); return d?.nom || ''; };
+        const getDivisionColor = (id) => { const d = divisions.find(x => x.id === id); return d?.couleur || '#64748b'; };
         const getTeamMemberName = (id) => { const m = team.find(x => x.id === id); return m?.nom || ''; };
         // TEAM-01: Couleur personnalisée par membre
         const getTeamMemberColor = (id) => { const m = team.find(x => x.id === id); return m?.couleur || '#3e5de7'; };  // Défaut: primary
@@ -575,6 +576,19 @@
                 const cols = projects.filter(p => p.actif !== false).map(p => ({ key: String(p.id), label: p.nom, icon: `<span style="color:${p.couleur}">●</span>`, tasks: ft.filter(t => t.projet === p.id) }));
                 cols.push({ key: 'none', label: 'Sans projet', icon: '', tasks: ft.filter(t => !t.projet) });
                 return cols;
+            } else if (groupBy === 'division') {
+                const cols = [...new Set(projects.map(p => p.division).filter(d => d))].map(divisionId => {
+                    const divisionName = getDivisionName(divisionId);
+                    const divisionColor = getDivisionColor(divisionId);
+                    return {
+                        key: String(divisionId),
+                        label: divisionName,
+                        icon: `<span style="color:${divisionColor}">●</span>`,
+                        tasks: ft.filter(t => getProjectDivision(t.projet) == divisionId)
+                    };
+                });
+                cols.push({ key: 'none', label: 'Sans division', icon: '', tasks: ft.filter(t => !getProjectDivision(t.projet)) });
+                return cols;
             }
             return [];
         }
@@ -610,6 +624,7 @@
             if (groupBy === 'statut') { updates.statut = colKey; if (colKey === 'done') updates.progression = 100; }
             else if (groupBy === 'priorite') updates.priorite = colKey;
             else if (groupBy === 'projet') updates.projet = colKey === 'none' ? null : parseInt(colKey);
+            else if (groupBy === 'division') { /* Pour division, on ne change rien car la division dépend du projet */ }
             
             Object.assign(task, updates);
             
@@ -680,6 +695,7 @@
             if (groupBy === 'statut') preset.statut = colKey;
             else if (groupBy === 'priorite') preset.priorite = colKey;
             else if (groupBy === 'projet') preset.projet = colKey === 'none' ? null : parseInt(colKey);
+            else if (groupBy === 'division') preset.projet = null; // L'utilisateur choisira le projet dans le panel
             
             panelState = {
                 open: true, isNew: true, taskId: null, taskIndex: -1, columnTasks: [], columnKey: colKey,
@@ -1099,10 +1115,12 @@
         function useDemoMode() {
             document.body.insertAdjacentHTML('beforeend', '<div class="demo-badge">Démo</div>');
             divisions = [
-                { id: 1, nom: 'PN', libelle: 'Prestation Nature', couleur: '#4f46e5'},
+                { id: 1, nom: 'D1', libelle: 'Division 1', couleur: '#4f46e5'},
+                { id: 2, nom: 'D2', libelle: 'Division 2', couleur: '#4f46e5'}
             ];
             moa = [
-                { id: 1, nom: 'DTEST', responable: 'Sophie FONSEC', couleur: '#4f46e5'},
+                { id: 1, nom: 'DTEST1', responable: 'Sophie FONSEC', couleur: '#4f46e5'},
+                { id: 2, nom: 'DTEST2', responable: 'Jean DUPONT', couleur: '#10b981'}
             ];
             team = [
                 { id: 1, nom: 'Alice Martin', actif: true, couleur: '#4f46e5' },
@@ -1112,7 +1130,7 @@
             projects = [
                 { id: 1, nom: 'Refonte Portail', couleur: '#4f46e5', actif: true, division: 1 },
                 { id: 2, nom: 'App Mobile', couleur: '#10b981', actif: true, division: 1 },
-                { id: 3, nom: 'API v2', couleur: '#f59e0b', actif: true, division: 1 }
+                { id: 3, nom: 'API v2', couleur: '#f59e0b', actif: true, division: 2 }
             ];
             const today = new Date();
             const day = (d) => dateToGrist(new Date(today.getFullYear(), today.getMonth(), today.getDate() + d));
