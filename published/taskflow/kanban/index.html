@@ -920,8 +920,8 @@
                 <!-- DDS pour tâches architecture -->
                 ${data.categorie === 'architecture' && data.type === 'tache' ? `
                 <div class="panel-section">
-                    <div class="panel-section-header"><span class="panel-section-title">Spécifications DDS</span></div>
-                    <div class="form-group"><textarea class="form-textarea" placeholder="Spécifications Design Document..." oninput="updateField('dds', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();">${escapeHtml(data.dds)}</textarea></div>
+                    <div class="panel-section-header"><span class="panel-section-title">DDS Archi</span></div>
+                    <div class="form-group"><textarea class="form-textarea" placeholder="DDS Archi..." oninput="updateField('dds', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();">${escapeHtml(data.dds)}</textarea></div>
                 </div>
                 ` : ''}
 
