@@ -339,7 +339,7 @@
         .panel .subtask-add input:focus { background: #dce6ff; outline: none; border-color: var(--primary); }
         .panel .tags-input { background: #e0e6f0; border: 1px solid #cbd5e1; }
         .panel .tags-input:focus-within { background: #dce6ff; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        .panel .tags-input input { background: transparent; }
+        .panel .tags-input input { background: transparent; color: var(--text-muted); }
         .panel .dates-inline { background: #e0e6f0; border-radius: 6px; border: 1px solid #cbd5e1; }
         .panel .dates-inline input { color: var(--text); }
         .panel .time-input-wrap input { background: #e0e6f0; border: 1px solid #cbd5e1; color: var(--text); }
@@ -418,8 +418,8 @@
             Divisions: [{ id: 'nom', type: 'Text' }, { id: 'libelle', type: 'Text' }, { id: 'couleur', type: 'Text' }],
             MOA: [{ id: 'nom', type: 'Text' }, { id: 'responsable', type: 'Text' }, { id: 'couleur', type: 'Text' }],
             Team: [{ id: 'nom', type: 'Text' }, { id: 'email', type: 'Text' }, { id: 'avatar', type: 'Text' }, { id: 'role', type: 'Choice' }, { id: 'actif', type: 'Bool' }, { id: 'couleur', type: 'Text' }],  // TEAM-01: couleur membre
-            Projects: [{ id: 'nom', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateFin', type: 'Date' }, { id: 'responsable', type: 'Ref:Team' }, { id: 'actif', type: 'Bool' }, { id: 'prt', type: 'Text' }, { id: 'moa', type: 'Ref:MOA' },{ id: 'acteursMOA', type: 'Text' }, { id: 'division', type: 'Ref:Divisions' }, { id: 'fonctionnel', type: 'Text' }, { id: 'dds', type: 'Text' }, { id: 'isp', type: 'Text' }, { id: 'fir', type: 'Text' }, { id: 'budget', type: 'Numeric' }, { id: 'fabricants', type: 'Text' }, { id: 'commentaire', type: 'Text' }],
-            Tasks: [{ id: 'titre', type: 'Text' }, { id: 'description', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateEcheance', type: 'Date' }, { id: 'priorite', type: 'Choice' }, { id: 'statut', type: 'Choice' }, { id: 'progression', type: 'Numeric' }, { id: 'projet', type: 'Ref:Projects' }, { id: 'assignees', type: 'RefList:Team' }, { id: 'type', type: 'Choice' }, { id: 'categorie', type: 'Choice' }, { id: 'dependDe', type: 'RefList:Tasks' }, { id: 'tags', type: 'ChoiceList' }, { id: 'estimationH', type: 'Numeric' }, { id: 'tempsPasse', type: 'Numeric' }, { id: 'couleur', type: 'Text' }, { id: 'subtasks', type: 'Text' }]  // FUT-01: subtasks en JSON
+            Projects: [{ id: 'nom', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateFin', type: 'Date' }, { id: 'responsable', type: 'Ref:Team' }, { id: 'actif', type: 'Bool' }, { id: 'prt', type: 'Text' }, { id: 'moa', type: 'Ref:MOA' },{ id: 'acteursMOA', type: 'Text' }, { id: 'division', type: 'Ref:Divisions' }, { id: 'fonctionnel', type: 'Text' }, { id: 'isp', type: 'Text' }, { id: 'fir', type: 'Text' }, { id: 'budget', type: 'Numeric' }, { id: 'fabricants', type: 'Text' }, { id: 'commentaire', type: 'Text' }],
+            Tasks: [{ id: 'titre', type: 'Text' }, { id: 'description', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateEcheance', type: 'Date' }, { id: 'priorite', type: 'Choice' }, { id: 'statut', type: 'Choice' }, { id: 'progression', type: 'Numeric' }, { id: 'projet', type: 'Ref:Projects' }, { id: 'assignees', type: 'RefList:Team' }, { id: 'type', type: 'Choice' }, { id: 'categorie', type: 'Choice' }, { id: 'dependDe', type: 'RefList:Tasks' }, { id: 'tags', type: 'ChoiceList' }, { id: 'estimationH', type: 'Numeric' }, { id: 'tempsPasse', type: 'Numeric' }, { id: 'dds', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'subtasks', type: 'Text' }]  // FUT-01: subtasks en JSON
         };
         const PRIORITY_LABELS = { 1: 'Critique', 2: 'Haute', 3: 'Moyenne', 4: 'Basse' };
         const PRIORITY_COLORS = { 1: '#ef4444', 2: '#f59e0b', 3: '#3b82f6', 4: '#64748b' };
@@ -747,7 +747,7 @@
             setTimeout(() => document.getElementById('taskTitle')?.focus(), 100);
         }
 
-        function cloneTaskData(task) { return { titre: task.titre || '', description: task.description || '', type: task.type || 'tache', priorite: String(task.priorite || '3'), statut: task.statut || 'todo', progression: task.progression || 0, dateDebut: task.dateDebut, dateEcheance: task.dateEcheance, projet: task.projet || null, assignees: getAssignees(task), dependDe: getDependsOn(task), tags: getTags(task), estimationH: task.estimationH || null, tempsPasse: task.tempsPasse || null, subtasks: getSubtasks(task), categorie: task.categorie || null }; }
+        function cloneTaskData(task) { return { titre: task.titre || '', description: task.description || '', type: task.type || 'tache', priorite: String(task.priorite || '3'), statut: task.statut || 'todo', progression: task.progression || 0, dateDebut: task.dateDebut, dateEcheance: task.dateEcheance, projet: task.projet || null, assignees: getAssignees(task), dependDe: getDependsOn(task), tags: getTags(task), estimationH: task.estimationH || null, tempsPasse: task.tempsPasse || null, subtasks: getSubtasks(task), categorie: task.categorie || null, dds: task.dds || '' }; }
         
         // FIX: Synchroniser editData vers le task local dans tasks[]
         function syncLocalTask() {
@@ -771,6 +771,7 @@
             task.tempsPasse = data.tempsPasse;
             task.subtasks = subtasksToJson(data.subtasks);
             task.categorie = data.categorie;
+            task.dds = data.dds;
         }
 
         function navigatePanelTask(dir) {
@@ -915,6 +916,14 @@
                     <div class="subtask-add"><input type="text" id="newSubtaskInput" placeholder="Ajouter..." onkeydown="handleSubtaskKeydown(event)"><button onclick="addSubtask()">+</button></div>
                 </div>
                 `}
+
+                <!-- DDS pour tâches architecture -->
+                ${data.categorie === 'architecture' && data.type === 'tache' ? `
+                <div class="panel-section">
+                    <div class="panel-section-header"><span class="panel-section-title">Spécifications DDS</span></div>
+                    <div class="form-group"><textarea class="form-textarea" placeholder="Spécifications Design Document..." oninput="updateField('dds', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();">${escapeHtml(data.dds)}</textarea></div>
+                </div>
+                ` : ''}
 
                 <!-- Détails : temps + tags + dépendances (hors jalon) -->
                 ${data.type !== 'jalon' ? `
@@ -1104,7 +1113,7 @@
             if (!data || panelState.isNew || !gristReady) return;
             if (data.dateDebut && data.dateEcheance && data.dateDebut > data.dateEcheance) { showToast('La date de début ne peut pas dépasser la date de fin', 'error'); return; }
             syncLocalTask();  // FIX: Synchroniser localement avant envoi API
-            const record = { titre: data.titre, description: data.description, type: data.type, priorite: data.priorite, statut: data.statut, progression: data.progression, dateDebut: data.dateDebut, dateEcheance: data.dateEcheance, projet: data.projet, assignees: toGristRefList(data.assignees), dependDe: toGristRefList(data.dependDe), tags: toGristChoiceList(data.tags), estimationH: data.estimationH, tempsPasse: data.tempsPasse, subtasks: subtasksToJson(data.subtasks), categorie: data.categorie };
+            const record = { titre: data.titre, description: data.description, type: data.type, priorite: data.priorite, statut: data.statut, progression: data.progression, dateDebut: data.dateDebut, dateEcheance: data.dateEcheance, projet: data.projet, assignees: toGristRefList(data.assignees), dependDe: toGristRefList(data.dependDe), tags: toGristChoiceList(data.tags), estimationH: data.estimationH, tempsPasse: data.tempsPasse, subtasks: subtasksToJson(data.subtasks), categorie: data.categorie, dds: data.dds };
             try { await grist.docApi.applyUserActions([['UpdateRecord', 'Tasks', panelState.taskId, record]]); showSaveIndicator(); } catch (e) { showToast('Erreur sauvegarde', 'error'); }
         }
 
@@ -1112,7 +1121,7 @@
             const data = panelState.editData;
             if (!data || !data.titre?.trim()) { showToast('Titre requis', 'error'); return; }
             if (data.dateDebut && data.dateEcheance && data.dateDebut > data.dateEcheance) { showToast('La date de début ne peut pas dépasser la date de fin', 'error'); return; }
-            const record = { titre: data.titre, description: data.description || '', type: data.type || 'tache', priorite: data.priorite || '3', statut: data.statut || 'todo', progression: data.progression || 0, dateDebut: data.dateDebut, dateEcheance: data.dateEcheance, projet: data.projet, assignees: toGristRefList(data.assignees), dependDe: toGristRefList(data.dependDe), tags: toGristChoiceList(data.tags), estimationH: data.estimationH, tempsPasse: data.tempsPasse, subtasks: subtasksToJson(data.subtasks), categorie: data.categorie };
+            const record = { titre: data.titre, description: data.description || '', type: data.type || 'tache', priorite: data.priorite || '3', statut: data.statut || 'todo', progression: data.progression || 0, dateDebut: data.dateDebut, dateEcheance: data.dateEcheance, projet: data.projet, assignees: toGristRefList(data.assignees), dependDe: toGristRefList(data.dependDe), tags: toGristChoiceList(data.tags), estimationH: data.estimationH, tempsPasse: data.tempsPasse, subtasks: subtasksToJson(data.subtasks), categorie: data.categorie, dds: data.dds };
             if (gristReady) {
                 try { await grist.docApi.applyUserActions([['AddRecord', 'Tasks', null, record]]); showToast('Créée', 'success'); await loadAllData(); closePanel(); } catch (e) { showToast('Erreur création', 'error'); }
             } else { record.id = Date.now(); tasks.push(record); showToast('Créée', 'success'); render(); closePanel(); }
@@ -1189,7 +1198,7 @@
                 { id: 7, titre: 'Correction bugs', priorite: '2', projet: 1, dateDebut: day(0), dateEcheance: day(3), progression: 10, statut: 'inprogress', type: 'tache', assignees: ['L', 2] },
                 { id: 8, titre: 'Réunion client', priorite: '2', projet: 2, dateDebut: day(7), dateEcheance: day(7), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 1, 3] },
                 { id: 9, titre: 'Migration DB', priorite: '1', projet: 3, dateDebut: day(-3), dateEcheance: day(0), progression: 90, statut: 'review', type: 'tache', assignees: ['L', 1] },
-                { id: 10, titre: 'Formation équipe', priorite: '3', projet: 1, dateDebut: day(10), dateEcheance: day(14), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 2, 3] }
+                { id: 10, titre: 'Formation équipe', priorite: '3', projet: 1, dateDebut: day(10), dateEcheance: day(14), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 2, 3], dds: 'XXX0001' }
             ];
             
             updateFilterMenus();
