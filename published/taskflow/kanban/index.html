@@ -329,6 +329,21 @@
         .prereq-badge.review { background: var(--info-light); color: #1e40af; }
         .prereq-badge.done { background: var(--success-light); color: #065f46; }
         .prereq-empty { color: var(--text-muted); font-size: 0.8rem; padding: 8px 0; font-style: italic; }
+
+        /* ── DARKER PANEL THEME ───────────────────────────────────────────────── */
+        .panel { background: #f5f6f8; }
+        .panel .form-input, .panel .form-select, .panel .form-textarea { background: #e0e6f0; border: 1px solid #cbd5e1; color: var(--text); }
+        .panel .form-input:focus, .panel .form-select:focus, .panel .form-textarea:focus { background: #dce6ff; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .panel .form-input::placeholder { color: #64748b; }
+        .panel .subtask-add input { background: #e0e6f0; border: 1px solid #cbd5e1; color: var(--text); }
+        .panel .subtask-add input:focus { background: #dce6ff; outline: none; border-color: var(--primary); }
+        .panel .tags-input { background: #e0e6f0; border: 1px solid #cbd5e1; }
+        .panel .tags-input:focus-within { background: #dce6ff; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .panel .tags-input input { background: transparent; }
+        .panel .dates-inline { background: #e0e6f0; border-radius: 6px; border: 1px solid #cbd5e1; }
+        .panel .dates-inline input { color: var(--text); }
+        .panel .time-input-wrap input { background: #e0e6f0; border: 1px solid #cbd5e1; color: var(--text); }
+        .panel .time-input-wrap input:focus { background: #dce6ff; outline: none; border-color: var(--primary); }
     </style>
 </head>
 <body>
