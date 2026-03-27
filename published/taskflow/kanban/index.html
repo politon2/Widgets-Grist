@@ -394,6 +394,7 @@
                     <div class="filter-option" onclick="openCreatePanelWithCategory('fonctionnel')">⚙️ Fonctionnel</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('budget')">💰 Budget</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('transfert')">🔄 Transfert</div>
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('technique')">🔧 Technique</div>
                 </div>
             </div>
         </div>
@@ -717,7 +718,8 @@
                 architecture: { priorite: '1', type: 'tache', estimationH: 16, description: 'Tâche d\'architecture' },
                 fonctionnel: { priorite: '2', type: 'tache', estimationH: 8, description: 'Tâche fonctionnelle' },
                 budget: { priorite: '3', type: 'tache', estimationH: 4, description: 'Tâche budgétaire' },
-                transfert: { priorite: '4', type: 'tache', estimationH: 2, description: 'Tâche de transfert' }
+                transfert: { priorite: '4', type: 'tache', estimationH: 2, description: 'Tâche de transfert' },
+                technique: { priorite: '2', type: 'tache', estimationH: 12, description: 'Tâche technique' }
             };
             const preset = categoryPresets[categorie] || {};
             openCreatePanelForColumnWithPreset(preset, categorie);
