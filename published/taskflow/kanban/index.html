@@ -392,9 +392,10 @@
                 <div class="filter-menu" id="filterCreateMenu">
                     <div class="filter-option" onclick="openCreatePanelWithCategory('architecture')">🏗️ Architecture</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('fonctionnel')">⚙️ Fonctionnel</div>
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('technique')">🔧 Technique</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('budget')">💰 Budget</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('transfert')">🔄 Transfert</div>
-                    <div class="filter-option" onclick="openCreatePanelWithCategory('technique')">🔧 Technique</div>
+                    
                 </div>
             </div>
         </div>
@@ -419,7 +420,7 @@
             Divisions: [{ id: 'nom', type: 'Text' }, { id: 'libelle', type: 'Text' }, { id: 'couleur', type: 'Text' }],
             MOA: [{ id: 'nom', type: 'Text' }, { id: 'responsable', type: 'Text' }, { id: 'couleur', type: 'Text' }],
             Team: [{ id: 'nom', type: 'Text' }, { id: 'email', type: 'Text' }, { id: 'avatar', type: 'Text' }, { id: 'role', type: 'Choice' }, { id: 'actif', type: 'Bool' }, { id: 'couleur', type: 'Text' }],  // TEAM-01: couleur membre
-            Projects: [{ id: 'nom', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateFin', type: 'Date' }, { id: 'responsable', type: 'Ref:Team' }, { id: 'actif', type: 'Bool' }, { id: 'prt', type: 'Text' }, { id: 'moa', type: 'Ref:MOA' },{ id: 'acteursMOA', type: 'Text' }, { id: 'division', type: 'Ref:Divisions' }, { id: 'fonctionnel', type: 'Text' }, { id: 'isp', type: 'Text' }, { id: 'fir', type: 'Text' }, { id: 'budget', type: 'Numeric' }, { id: 'fabricants', type: 'Text' }, { id: 'commentaire', type: 'Text' }],
+            Projects: [{ id: 'nom', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateFin', type: 'Date' }, { id: 'responsable', type: 'Ref:Team' }, { id: 'actif', type: 'Bool' }, { id: 'prt', type: 'Text' }, { id: 'moa', type: 'Ref:MOA' },{ id: 'acteursMOA', type: 'Text' }, { id: 'division', type: 'Ref:Divisions' }, { id: 'fonctionnel', type: 'Text' }, { id: 'budget', type: 'Numeric' }, { id: 'fabricants', type: 'Text' }, { id: 'commentaire', type: 'Text' }],
             Tasks: [{ id: 'titre', type: 'Text' }, { id: 'description', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateEcheance', type: 'Date' }, { id: 'priorite', type: 'Choice' }, { id: 'statut', type: 'Choice' }, { id: 'progression', type: 'Numeric' }, { id: 'projet', type: 'Ref:Projects' }, { id: 'assignees', type: 'RefList:Team' }, { id: 'type', type: 'Choice' }, { id: 'categorie', type: 'Choice' }, { id: 'dependDe', type: 'RefList:Tasks' }, { id: 'tags', type: 'ChoiceList' }, { id: 'estimationH', type: 'Numeric' }, { id: 'tempsPasse', type: 'Numeric' }, { id: 'dds', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'subtasks', type: 'Text' }]  // FUT-01: subtasks en JSON
         };
         const PRIORITY_LABELS = { 1: 'Critique', 2: 'Haute', 3: 'Moyenne', 4: 'Basse' };
@@ -919,11 +920,27 @@
                 </div>
                 `}
 
-                <!-- DDS pour tâches architecture -->
+                <!-- DDS pour tâches architecture = DDS ARchi-->
                 ${data.categorie === 'architecture' && data.type === 'tache' ? `
                 <div class="panel-section">
                     <div class="panel-section-header"><span class="panel-section-title">DDS Archi</span></div>
-                    <div class="form-group"><div class="tags-input"><input type="text" id="ddsInput" placeholder="DDS Archi..." value="${escapeHtml(data.dds)}" oninput="updateField('dds', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();"></div></div>
+                    <div class="form-group"><div class="tags-input"><input type="text" id="ddsArchiInput" placeholder="DDS Archi..." value="${escapeHtml(data.dds)}" oninput="updateField('dds', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();"></div></div>
+                </div>
+                ` : ''}
+
+                <!-- DDS pour tâches technique = DDS Sécurité-->
+                ${data.categorie === 'technique' && data.type === 'tache' ? `
+                <div class="panel-section">
+                    <div class="panel-section-header"><span class="panel-section-title">DDS Instruction Sécurité</span></div>
+                    <div class="form-group"><div class="tags-input"><input type="text" id="ddsSecuriteInput" placeholder="DDS Sécurité..." value="${escapeHtml(data.dds)}" oninput="updateField('dds', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();"></div></div>
+                </div>
+                ` : ''}
+
+                <!-- DDS pour tâches Budget = FIR-->
+                ${data.categorie === 'budget' && data.type === 'tache' ? `
+                <div class="panel-section">
+                    <div class="panel-section-header"><span class="panel-section-title">FIR</span></div>
+                    <div class="form-group"><div class="tags-input"><input type="text" id="firInput" placeholder="FIR..." value="${escapeHtml(data.dds)}" oninput="updateField('dds', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();"></div></div>
                 </div>
                 ` : ''}
 
