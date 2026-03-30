@@ -716,11 +716,11 @@
         
         function openCreatePanelWithCategory(categorie) {
             const categoryPresets = {
-                architecture: { priorite: '1', type: 'tache', titre: 'Architecture', description: 'Tâche d\'architecture', subtasks: '[{"id":' + Date.now() + ',"text":"Créer DDS","done":false},{"id":' + Date.now() + ',"text":"Kickoff","done":false},{"id":' + Date.now() + ',"text":"DAv0","done":false},{"id":1774856563420,"text":"DAv1","done":false}]' },
-                fonctionnel: { priorite: '2', type: 'tache', titre: 'Fonctionnel', description: 'Tâche fonctionnelle', subtasks: '[{"id":' + Date.now() + ',"text":"Expression de Besoins","done":false},{"id":' + Date.now() + ',"text":"Présentation MOA","done":false},{"id":'+ Date.now() + ',"text":"CdC v0","done":false},{"id":'+ Date.now() + ',"text":"CdC v1 ou SFG","done":false}]'},
-                budget: { priorite: '3', type: 'tache', titre: 'Budget', description: 'Tâche budgétaire', subtasks: '[{"id":' + Date.now() + ',"text":"Budget Roadmap","done":false},{"id":' + Date.now() + ',"text":"PRT Palier","done":false},{"id":' + Date.now() + ',"text":"Budget projet validé","done":false}]'},
-                transfert: { priorite: '4', type: 'tache', titre: 'transfert', description: 'Tâche de transfert', subtasks: '[{"id":' + Date.now() + ',"text":"Support de transfert","done":false},{"id":' + Date.now() + ',"text":"Nomination équipe projet","done":false},{"id":' + Date.now() + ',"text":"Présentation MOE","done":false},{"id":' + Date.now() + ',"text":"Demande d\'EPC","done":false},{"id":' + Date.now() + ',"text":"Présentation TMA","done":false}]' },
-                technique: { priorite: '2', type: 'tache', titre: 'technique', description: 'Tâche technique', subtasks: '[{"id":' + Date.now() + ',"text":"Créer DDS Sécurité","done":false},{"id":' + Date.now() + ',"text":"Réunion ENF","done":false},{"id":' + Date.now() + ',"text":"Revue technique","done":false}]' }
+                architecture: { priorite: '1', type: 'tache', titre: 'Architecture', description: 'Tâche d\'architecture', subtasks: [{ id: Date.now(), text: 'Créer DDS', done: false }, { id: Date.now() + 1, text: 'Kickoff', done: false }, { id: Date.now() + 2, text: 'DAv0', done: false }, { id: 1774856563420, text: 'DAv1', done: false }] },
+                fonctionnel: { priorite: '2', type: 'tache', titre: 'Fonctionnel', description: 'Tâche fonctionnelle', subtasks: [{ id: Date.now(), text: 'Expression de Besoins', done: false }, { id: Date.now() + 1, text: 'Présentation MOA', done: false }, { id: Date.now() + 2, text: 'CdC v0', done: false }, { id: Date.now() + 3, text: 'CdC v1 ou SFG', done: false }] },
+                budget: { priorite: '3', type: 'tache', titre: 'Budget', description: 'Tâche budgétaire', subtasks: [{ id: Date.now(), text: 'Budget Roadmap', done: false }, { id: Date.now() + 1, text: 'PRT Palier', done: false }, { id: Date.now() + 2, text: 'Budget projet validé', done: false }] },
+                transfert: { priorite: '4', type: 'tache', titre: 'transfert', description: 'Tâche de transfert', subtasks: [{ id: Date.now(), text: 'Support de transfert', done: false }, { id: Date.now() + 1, text: 'Nomination équipe projet', done: false }, { id: Date.now() + 2, text: 'Présentation MOE', done: false }, { id: Date.now() + 3, text: 'Demande d\'EPC', done: false }, { id: Date.now() + 4, text: 'Présentation TMA', done: false }] },
+                technique: { priorite: '2', type: 'tache', titre: 'technique', description: 'Tâche technique', subtasks: [{ id: Date.now(), text: 'Créer DDS Sécurité', done: false }, { id: Date.now() + 1, text: 'Réunion ENF', done: false }, { id: Date.now() + 2, text: 'Revue technique', done: false }] }
             };
             const preset = categoryPresets[categorie] || {};
             openCreatePanelForColumnWithPreset(preset, categorie);
@@ -742,7 +742,7 @@
             
             panelState = {
                 open: true, isNew: true, taskId: null, taskIndex: -1, columnTasks: [], columnKey: colKey,
-                editData: { titre: preset.titre || '', description: preset.description || '', type: preset.type || 'tache', priorite: preset.priorite || '3', statut: preset.statut || 'todo', progression: 0, dateDebut: dateToGrist(today), dateEcheance: dateToGrist(addDays(today, 7)), projet: preset.projet !== undefined ? preset.projet : (projects.length > 0 ? projects[0].id : null), assignees: [], dependDe: [], tags: [], estimationH: preset.estimationH || null, tempsPasse: null, subtasks: preset.subtasks || [], categorie: categorie }
+                editData: { titre: preset.titre || '', description: preset.description || '', type: preset.type || 'tache', priorite: preset.priorite || '3', statut: preset.statut || 'todo', progression: 0, dateDebut: dateToGrist(today), dateEcheance: dateToGrist(addDays(today, 7)), projet: preset.projet !== undefined ? preset.projet : (projects.length > 0 ? projects[0].id : null), assignees: [], dependDe: [], tags: [], estimationH: preset.estimationH || null, tempsPasse: null, subtasks: normalizeSubtasks(preset.subtasks), categorie: categorie }
             };
             renderPanelTask();
             openPanel();
@@ -1071,6 +1071,14 @@
         function getSubtasks(task) {
             if (!task?.subtasks) return [];
             try { return JSON.parse(task.subtasks); } catch (e) { return []; }
+        }
+        function normalizeSubtasks(subtasks) {
+            if (!subtasks) return [];
+            if (Array.isArray(subtasks)) return subtasks;
+            if (typeof subtasks === 'string') {
+                try { return JSON.parse(subtasks); } catch (e) { return []; }
+            }
+            return [];
         }
         function subtasksToJson(subtasks) {
             return JSON.stringify(subtasks || []);
