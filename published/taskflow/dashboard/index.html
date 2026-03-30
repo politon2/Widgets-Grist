@@ -935,7 +935,6 @@ function renderProjects(comp, ft) {
         const responsableColor = getMemberColor(p.responsable);
         const responsableInitials = toInitials(responsableName || '');
         const moaColor = getMoaColor(p.moa);
-        //const moaInitials = toInitials(moaName || '');
 
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
@@ -946,7 +945,6 @@ function renderProjects(comp, ft) {
                     ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
                     <span>PRT: ${escapeHtml(p.prt || '—')}</span>
                     ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
-                    ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}"><i class="avatar" style="background:${moaColor};width:20px;height:20px;font-size:0.65rem;line-height:20px">${escapeHtml(moaName)}</i>${escapeHtml(moaName)}</span>` : '<span>—</span>'}
                 </div>
                 
             </div>
