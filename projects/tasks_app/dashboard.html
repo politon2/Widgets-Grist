@@ -896,20 +896,25 @@ function renderProjects(comp, ft) {
         return name.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2);
     };
 
-    const getAssigneesByCategory = (projTasks, category) => {
-        const set = new Set();
-        (projTasks || []).forEach(t => {
+    const getTasksByCategory = (projTasks, category) => {
+        return (projTasks || []).filter(t => {
             const cat = (t.categorie || '').toLowerCase();
-            if (cat === category.toLowerCase()) {
-                getAssigneesArray(t).forEach(a => set.add(String(a)));
-            }
-        });
-        return [...set];
+            return cat === category.toLowerCase();
+        }).map(t => t.id);
     };
 
-    const renderAssigneeGroup = (label, ids) => {
-        if (!ids.length) return '';
-        return `<span class="project-badge"><strong>${label}:</strong>${ids.map(id => {
+    const renderAssigneeGroup = (label, taskIds) => {
+        if (!taskIds.length) return '';
+        const memberSet = new Set();
+        taskIds.forEach(taskId => {
+            const task = tasks.find(t => String(t.id) === String(taskId));
+            if (task) {
+                getAssigneesArray(task).forEach(a => memberSet.add(String(a)));
+            }
+        });
+        const memberIds = [...memberSet];
+        if (!memberIds.length) return '';
+        return `<span class="project-badge"><strong>${label}:</strong>${memberIds.map(id => {
             const name = getMemberName(id);
             const initials = toInitials(name);
             return `<span class="project-badge-avatar" style="background:${getMemberColor(id)}" title="${escapeHtml(name)}">${escapeHtml(initials)}</span>`;
@@ -921,11 +926,11 @@ function renderProjects(comp, ft) {
         const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
         const projectTasks = byProjTasks[p.id] || [];
 
-        const fonctionnels = getAssigneesByCategory(projectTasks, 'Fonctionnel');
-        const architectes = getAssigneesByCategory(projectTasks, 'Architecture');
-        const moa = getAssigneesByCategory(projectTasks, 'Budget');
-        const moe = getAssigneesByCategory(projectTasks, 'Transfert');
-        const techniques = getAssigneesByCategory(projectTasks, 'Technique');
+        const fonctionnels = getTasksByCategory(projectTasks, 'Fonctionnel');
+        const architectes = getTasksByCategory(projectTasks, 'Architecture');
+        const moa = getTasksByCategory(projectTasks, 'Budget');
+        const moe = getTasksByCategory(projectTasks, 'Transfert');
+        const techniques = getTasksByCategory(projectTasks, 'Technique');
 
         const responsableName = getMemberName(p.responsable);
         const moaName = getMemberName(p.moa);
