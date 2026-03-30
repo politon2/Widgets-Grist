@@ -869,7 +869,7 @@ function renderProjects(comp, ft) {
         if (getStatus(t) === 'done') stats[t.projet].done++;
     });
 
-        const getMemberName = id => {
+    const getMemberName = id => {
         const member = team.find(m => String(m.id) === String(id));
         return member ? member.nom : '';
     };
@@ -879,8 +879,8 @@ function renderProjects(comp, ft) {
         return member ? (member.couleur || '#64748b') : '#64748b';
     };
 
-    const getDivisionName = divId => {
-        const div = divisions.find(d => String(d.id) === String(divId));
+    const getDivisionName = id => {
+        const div = divisions.find(d => String(d.id) === String(id));
         return div ? div.nom : '';
     };
 
