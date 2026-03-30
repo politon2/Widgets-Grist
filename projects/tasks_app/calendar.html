@@ -679,8 +679,8 @@
             return depDeps.some(d => wouldCreateCycle(taskId, d, visited));
         }
         
-        function getAvailableDependencies(taskId) {
-            return tasks.filter(t => t.id !== taskId && !wouldCreateCycle(taskId, t.id));
+        function getAvailableDependencies(taskId, projectId) {
+            return tasks.filter(t => t.id !== taskId && t.projet === projectId && !wouldCreateCycle(taskId, t.id));
         }
         
         function getBlockedTasks(taskId) {
@@ -1716,7 +1716,7 @@
                 const d = tasks.find(t => t.id === id);
                 return d ? `<span class="multi-select-chip">${escapeHtml(d.titre)}<span class="remove" onclick="event.stopPropagation();removeDependency(${id})">×</span></span>` : '';
             }).join('');
-            const availableDeps = panelState.isNew ? tasks : getAvailableDependencies(panelState.taskId);
+            const availableDeps = panelState.isNew ? tasks.filter(t => t.projet === data.projet) : getAvailableDependencies(panelState.taskId, data.projet);
             const depsOptions = availableDeps.map(t =>
                 `<div class="multi-select-option ${data.dependDe.includes(t.id) ? 'selected' : ''}" onclick="toggleDependency(${t.id})"><input type="checkbox" ${data.dependDe.includes(t.id) ? 'checked' : ''} onclick="event.stopPropagation();toggleDependency(${t.id})">${escapeHtml(t.titre)}</div>`
             ).join('');

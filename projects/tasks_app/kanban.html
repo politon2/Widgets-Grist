@@ -477,7 +477,7 @@
         const getPriority = (t) => (t?.priorite >= 1 && t?.priorite <= 4) ? parseInt(t.priorite) : 3;
 
         function wouldCreateCycle(taskId, depId, visited = new Set()) { if (taskId === depId) return true; if (visited.has(depId)) return false; visited.add(depId); const depTask = tasks.find(t => t.id === depId); if (!depTask) return false; return getDependsOn(depTask).some(d => wouldCreateCycle(taskId, d, visited)); }
-        function getAvailableDependencies(taskId) { return tasks.filter(t => t.id !== taskId && !wouldCreateCycle(taskId, t.id)); }
+        function getAvailableDependencies(taskId, projectId) { return tasks.filter(t => t.id !== taskId && t.projet === projectId && !wouldCreateCycle(taskId, t.id)); }
         function getBlockedTasks(taskId) { return tasks.filter(t => getDependsOn(t).includes(taskId)); }
 
         // ═══════════════════════════════════════════════════════════════════════
@@ -741,7 +741,7 @@
 
             // Dépendances (pour tâche uniquement)
             const depsChips = data.dependDe.map(id => { const d = tasks.find(t => t.id === id); return d ? `<span class="multi-select-chip">${escapeHtml(d.titre)}<span class="remove" onclick="event.stopPropagation();removeDependency(${id})">×</span></span>` : ''; }).join('');
-            const availableDeps = panelState.isNew ? tasks : getAvailableDependencies(panelState.taskId);
+            const availableDeps = panelState.isNew ? tasks.filter(t => t.projet === data.projet) : getAvailableDependencies(panelState.taskId, data.projet);
             const depsOptions = availableDeps.map(t => `<div class="multi-select-option ${data.dependDe.includes(t.id) ? 'selected' : ''}" onclick="toggleDependency(${t.id})"><input type="checkbox" ${data.dependDe.includes(t.id) ? 'checked' : ''} onclick="event.stopPropagation();toggleDependency(${t.id})">${escapeHtml(t.titre)}</div>`).join('');
             let blockedHtml = '';
             if (!panelState.isNew) { const blocked = getBlockedTasks(panelState.taskId); if (blocked.length) blockedHtml = `<div class="deps-display"><div class="deps-group"><div class="deps-group-label">→ Bloque :</div><div class="deps-list">${blocked.map(t => `<div class="dep-item" onclick="openTaskPanel(${t.id})">→ ${escapeHtml(t.titre)}</div>`).join('')}</div></div></div>`; }
