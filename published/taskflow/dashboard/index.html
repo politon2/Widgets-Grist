@@ -866,7 +866,7 @@ function renderProjects(comp, ft) {
         byProjTasks[t.projet].push(t);
 
         stats[t.projet].total++;
-
+        if (getStatus(t) === 'done') stats[t.projet].done++;
     });
 
     
