@@ -929,19 +929,23 @@ function renderProjects(comp, ft) {
         const projectTasks = byProjTasks[p.id] || [];
 
         const responsableName = getMemberName(p.responsable);
-        //const moaName = getMoaName(p.moa);
+        const moaName = getMoaName(p.moa);
         const divisionName = getDivisionName(p.division);
         const divisionColor = getDivisionColor(p.division);
         const responsableColor = getMemberColor(p.responsable);
         const responsableInitials = toInitials(responsableName || '');
-        //const moaColor = getMoaColor(p.moa);
+        const moaColor = getMoaColor(p.moa);
 
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
             <div class="project-info">
                 <div class="project-name">${escapeHtml(p.nom)}</div>
                 <div class="project-stats">${s.done}/${s.total} terminées</div>
-            
+                <div class="project-meta">
+                    ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
+                    <span>PRT: ${escapeHtml(p.prt || '—')}</span>
+                    ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
+                </div>
                 
             </div>
             <div class="project-progress">
