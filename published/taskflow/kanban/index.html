@@ -716,11 +716,11 @@
         
         function openCreatePanelWithCategory(categorie) {
             const categoryPresets = {
-                architecture: { priorite: '1', type: 'tache', estimationH: 16, description: 'Tâche d\'architecture' },
-                fonctionnel: { priorite: '2', type: 'tache', estimationH: 8, description: 'Tâche fonctionnelle' },
-                budget: { priorite: '3', type: 'tache', estimationH: 4, description: 'Tâche budgétaire' },
-                transfert: { priorite: '4', type: 'tache', estimationH: 2, description: 'Tâche de transfert' },
-                technique: { priorite: '2', type: 'tache', estimationH: 12, description: 'Tâche technique' }
+                architecture: { priorite: '1', type: 'tache', titre: 'Architecture', description: 'Tâche d\'architecture', subtasks: '[{"id":' + Date.now() + ',"text":"Créer DDS","done":false},{"id":' + Date.now() + ',"text":"Kickoff","done":false},{"id":' + Date.now() + ',"text":"DAv0","done":false},{"id":1774856563420,"text":"DAv1","done":false}]'},
+                fonctionnel: { priorite: '2', type: 'tache', titre: 'Fonctionnel', description: 'Tâche fonctionnelle' },
+                budget: { priorite: '3', type: 'tache', titre: 'Budget', description: 'Tâche budgétaire' },
+                transfert: { priorite: '4', type: 'tache', titre: 'transfert', description: 'Tâche de transfert' },
+                technique: { priorite: '2', type: 'tache', titre: 'technique', description: 'Tâche technique' }
             };
             const preset = categoryPresets[categorie] || {};
             openCreatePanelForColumnWithPreset(preset, categorie);
