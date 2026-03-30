@@ -866,65 +866,16 @@ function renderProjects(comp, ft) {
         byProjTasks[t.projet].push(t);
 
         stats[t.projet].total++;
-        if (getStatus(t) === 'done') stats[t.projet].done++;
+
     });
 
-    const getMemberName = id => {
-        const member = team.find(m => String(m.id) === String(id));
-        return member ? member.nom : '';
-    };
-
-    const getMemberColor = id => {
-        const member = team.find(m => String(m.id) === String(id));
-        return member ? (member.couleur || '#64748b') : '#64748b';
-    };
-
-    const getDivisionName = divId => {
-        const div = divisions.find(d => String(d.id) === String(divId));
-        return div ? div.nom : '';
-    };
-
-    const getDivisionColor = divId => {
-        const div = divisions.find(d => String(d.id) === String(divId));
-        return div ? (div.couleur || '#64748b') : '#64748b';
-    };
-
-    const toInitials = name => {
-        if (!name) return '?';
-        return name.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2);
-    };
-
-    const getAssigneesByCategory = (projTasks, category) => {
-        const set = new Set();
-        (projTasks || []).forEach(t => {
-            const cat = (t.categorie || '').toLowerCase();
-            if (cat === category.toLowerCase()) {
-                getAssigneesArray(t).forEach(a => set.add(String(a)));
-            }
-        });
-        return [...set];
-    };
-
-    const renderAssigneeGroup = (label, ids) => {
-        if (!ids.length) return '';
-        return `<span class="project-badge"><strong>${label}</strong>${ids.map(id => {
-            const name = getMemberName(id);
-            const initials = toInitials(name);
-            return `<span class="project-badge-avatar" style="background:${getMemberColor(id)}" title="${escapeHtml(name)}">${escapeHtml(initials)}</span>`;
-        }).join('')}</span>`;
-    };
-
+    
     return `<div class="projects-list">${active.filter(p => stats[p.id]).map(p => {
 
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
             <div class="project-info">
                 <div class="project-name">${escapeHtml(p.nom)}</div>
-                <div class="project-stats">${s.done}/${s.total} terminées</div>
-            </div>
-            <div class="project-progress">
-                <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
-                <div class="project-progress-text">${pct}%</div>
             </div>
         </div>`;
     }).join('')}</div>`;
