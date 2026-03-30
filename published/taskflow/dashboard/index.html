@@ -919,6 +919,15 @@ function renderProjects(comp, ft) {
         const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
         const projectTasks = byProjTasks[p.id] || [];
 
+        const responsableName = getMemberName(p.responsable);
+        const moaName = getMemberName(p.moa);
+        const divisionName = getDivisionName(p.division);
+        const divisionColor = getDivisionColor(p.division);
+        const responsableColor = getMemberColor(p.responsable);
+        const responsableInitials = toInitials(responsableName || '');
+        const moaColor = getMemberColor(p.moa);
+        const moaInitials = toInitials(moaName || '');
+
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
             <div class="project-info">
