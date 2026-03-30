@@ -941,11 +941,7 @@ function renderProjects(comp, ft) {
             <div class="project-info">
                 <div class="project-name">${escapeHtml(p.nom)}</div>
                 <div class="project-stats">${s.done}/${s.total} terminées</div>
-                <div class="project-meta">
-                    ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
-                    <span>PRT: ${escapeHtml(p.prt || '—')}</span>
-                    ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
-                </div>
+            
                 
             </div>
             <div class="project-progress">
