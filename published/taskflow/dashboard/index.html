@@ -854,7 +854,7 @@ function renderUpcoming(comp, ft) {
 
 function renderProjects(comp, ft) {
     const active = projects.filter(p => p.actif !== false);
-    if (active.length) return '<div class="empty-state"><div class="empty-icon">◧</div><div class="empty-text">Aucun projet actif</div></div>';
+    if (!active.length) return '<div class="empty-state"><div class="empty-icon">◧</div><div class="empty-text">Aucun projet actif</div></div>';
 
     const stats = {};
     const byProjTasks = {};
