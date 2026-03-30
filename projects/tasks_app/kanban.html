@@ -571,7 +571,7 @@
             const projectColor = getProjectColor(t.projet);
             const typeIcon = TYPE_ICONS[t.type] || '';
 
-            return `<div class="task-card p${p} ${t.statut === 'done' ? 'done' : ''} ${t.id === selectedTaskId ? 'selected' : ''}" data-id="${t.id}" onclick="openTaskPanel(${t.id})">
+            return `<div class="task-card ${t.statut === 'done' ? 'done' : ''} ${t.id === selectedTaskId ? 'selected' : ''}" data-id="${t.id}" onclick="openTaskPanel(${t.id})" style="border-left-color:${projectColor};">
                 <div class="card-header">
                     <span class="card-title">${escapeHtml(t.titre) || 'Sans titre'}</span>
                     ${typeIcon ? `<span class="card-type">${typeIcon}</span>` : ''}
