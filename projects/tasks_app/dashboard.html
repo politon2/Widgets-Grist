@@ -926,11 +926,11 @@ function renderProjects(comp, ft) {
         const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
         const projectTasks = byProjTasks[p.id] || [];
 
-        const fonctionnels = getTasksByCategory(projectTasks, 'Fonctionnel');
-        const architectes = getTasksByCategory(projectTasks, 'Architecture');
-        const moa = getTasksByCategory(projectTasks, 'Budget');
-        const moe = getTasksByCategory(projectTasks, 'Transfert');
-        const techniques = getTasksByCategory(projectTasks, 'Technique');
+        //const fonctionnels = getTasksByCategory(projectTasks, 'Fonctionnel');
+        //const architectes = getTasksByCategory(projectTasks, 'Architecture');
+        //const moa = getTasksByCategory(projectTasks, 'Budget');
+        //const moe = getTasksByCategory(projectTasks, 'Transfert');
+        //const techniques = getTasksByCategory(projectTasks, 'Technique');
 
         const responsableName = getMemberName(p.responsable);
         const moaName = getMemberName(p.moa);
