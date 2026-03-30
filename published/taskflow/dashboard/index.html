@@ -879,14 +879,12 @@ function renderProjects(comp, ft) {
         return member ? (member.couleur || '#64748b') : '#64748b';
     };
 
-    const getDivisionName = id => {
-        if (!divisions || !Array.isArray(divisions)) return '';
-        const division = divisions.find(d => String(d.id) === String(id));
+    const getDivisionName = divId => {
+        const division = divisions.find(d => String(d.id) === String(divId));
         return division ? division.nom : '';
     };
 
     const getDivisionColor = divId => {
-        if (!divisions || !Array.isArray(divisions)) return '#64748b';
         const div = divisions.find(d => String(d.id) === String(divId));
         return div ? (div.couleur || '#64748b') : '#64748b';
     };
@@ -922,19 +920,32 @@ function renderProjects(comp, ft) {
         const projectTasks = byProjTasks[p.id] || [];
 
         const responsableName = getMemberName(p.responsable);
-        //2const moaName = getMemberName(p.moa);
+        const moaName = getMemberName(p.moa);
         const divisionName = getDivisionName(p.division);
-        //4const divisionColor = getDivisionColor(p.division);
-        //3const responsableColor = getMemberColor(p.responsable);
-        //3const responsableInitials = toInitials(responsableName || '');
-        //const moaColor = getMemberColor(p.moa);
-        //const moaInitials = toInitials(moaName || '');
+        const divisionColor = getDivisionColor(p.division);
+        const responsableColor = getMemberColor(p.responsable);
+        const responsableInitials = toInitials(responsableName || '');
+        const moaColor = getMemberColor(p.moa);
+        const moaInitials = toInitials(moaName || '');
 
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
             <div class="project-info">
                 <div class="project-name">${escapeHtml(p.nom)}</div>
                 <div class="project-stats">${s.done}/${s.total} terminées</div>
+                <div class="project-meta">
+                    ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
+                    <span>PRT: ${escapeHtml(p.prt || '—')}</span>
+                    ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
+                    ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}"><i class="avatar" style="background:${moaColor};width:20px;height:20px;font-size:0.65rem;line-height:20px">${escapeHtml(moaInitials)}</i>${escapeHtml(moaName)}</span>` : '<span>—</span>'}
+                </div>
+                <div class="project-badges">
+                    ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
+                    ${renderAssigneeGroup('Architectes', architectes)}
+                    ${renderAssigneeGroup('MOA', moa)}
+                    ${renderAssigneeGroup('MOE', moe)}
+                    ${renderAssigneeGroup('Techniques', techniques)}
+                </div>
             </div>
             <div class="project-progress">
                 <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
