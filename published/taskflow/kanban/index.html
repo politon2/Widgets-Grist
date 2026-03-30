@@ -90,7 +90,8 @@
         .card-title { font-weight: 500; font-size: 0.85rem; flex: 1; }
         .card-type { font-size: 0.75rem; }
         .card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 0.7rem; color: var(--text-muted); }
-        .card-project { display: flex; align-items: center; gap: 3px; }
+        .card-project { display: flex; align-items: center; gap: 5px; }
+        .card-project-manager { width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: white; }
         .card-deps { display: flex; align-items: center; gap: 2px; }
         .card-progress { height: 3px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; cursor: pointer; transition: height 0.15s; }  /* KAN-03: cliquable */
         .card-progress:hover { height: 6px; }  /* KAN-03: feedback visuel */
@@ -497,6 +498,8 @@
         const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return p?.division || ''; };
         //const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return divisions.find(y => y.id === p?.division).nom || ''; };
         const getProjectColor = (id) => { const p = projects.find(x => x.id === id); return p?.couleur || '#64748b'; };
+        const getProjectManagerName = (id) => { const p = projects.find(x => x.id === id); if (!p?.responsable) return ''; const m = team.find(x => x.id === p.responsable); return m?.nom || ''; };
+        const getProjectManagerColor = (id) => { const p = projects.find(x => x.id === id); if (!p?.responsable) return '#64748b'; const m = team.find(x => x.id === p.responsable); return m?.couleur || '#64748b'; };
         const getDivisionName = (id) => { const d = divisions.find(x => x.id === id); return d?.nom || ''; };
         const getDivisionColor = (id) => { const d = divisions.find(x => x.id === id); return d?.couleur || '#64748b'; };
         const getTeamMemberName = (id) => { const m = team.find(x => x.id === id); return m?.nom || ''; };
@@ -632,7 +635,7 @@
                     ${typeIcon ? `<span class="card-type">${typeIcon}</span>` : ''}
                 </div>
                 <div class="card-meta">
-                    ${projectName ? `<span class="card-project"><span style="color:${projectColor}">●</span> ${escapeHtml(projectName)}</span>` : ''}
+                    ${projectName ? `<span class="card-project"><span class="card-project-manager" style="background:${getProjectManagerColor(t.projet)}">${escapeHtml(getInitials(getProjectManagerName(t.projet)))}</span> ${escapeHtml(projectName)}${getProjectManagerName(t.projet) ? ` (${escapeHtml(getProjectManagerName(t.projet))})` : ''}</span>` : ''}
                     ${deps.length ? `<span class="card-deps">← ${deps.length}</span>` : ''}
                 </div>
                 ${t.type !== 'jalon' ? `<div class="card-progress" onclick="event.stopPropagation();setCardProgress(event, ${t.id})"><div class="card-progress-fill p${p}" style="width:${t.progression || 0}%"></div></div>` : ''}
