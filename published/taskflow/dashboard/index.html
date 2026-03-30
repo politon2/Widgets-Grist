@@ -862,8 +862,8 @@ function renderProjects(comp, ft) {
     ft.forEach(t => {
         if (!t.projet) return;
         if (!stats[t.projet]) stats[t.projet] = { total:0, done:0 };
-        if (!byProjTasks[t.projet]) byProjTasks[t.projet] = [];
-        byProjTasks[t.projet].push(t);
+   //     if (!byProjTasks[t.projet]) byProjTasks[t.projet] = [];
+   //     byProjTasks[t.projet].push(t);
 
         stats[t.projet].total++;
         if (getStatus(t) === 'done') stats[t.projet].done++;
