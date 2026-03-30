@@ -929,12 +929,12 @@ function renderProjects(comp, ft) {
         const projectTasks = byProjTasks[p.id] || [];
 
         const responsableName = getMemberName(p.responsable);
-        const moaName = getMoaName(p.moa);
+        //const moaName = getMoaName(p.moa);
         const divisionName = getDivisionName(p.division);
         const divisionColor = getDivisionColor(p.division);
         const responsableColor = getMemberColor(p.responsable);
         const responsableInitials = toInitials(responsableName || '');
-        const moaColor = getMoaColor(p.moa);
+        //const moaColor = getMoaColor(p.moa);
 
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
@@ -1088,8 +1088,8 @@ async function loadAllData() {
             grist.docApi.fetchTable('Tasks'),
             grist.docApi.fetchTable('Projects'),
             grist.docApi.fetchTable('Team'),
-            grist.docApi.fetchTable('Divisions').catch(()=>({})),
-            grist.docApi.fetchTable('Moa').catch(()=>({})),
+            grist.docApi.fetchTable('Divisions'),
+            grist.docApi.fetchTable('Moa'),
         ]);
         tasks=convert(td); projects=convert(pd); team=convert(md); divisions=convert(dd); moa=convert(mm);
         render();
