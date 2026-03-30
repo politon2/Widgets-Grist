@@ -370,7 +370,7 @@ const DEFAULT_LAYOUT = [
 // ═══════════════════════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════════════════════
-let tasks = [], projects = [], team = [];
+let tasks = [], projects = [], team = [], divisions = [], moa = [];
 let gristReady = false;
 let isEditMode = false;
 let selectedCompId = null;
@@ -880,11 +880,13 @@ function renderProjects(comp, ft) {
     };
 
     const getDivisionName = id => {
-        //const division = divisions.find(d => String(d.id) === String(id));
-        return 'PN';
+        if (!divisions || !Array.isArray(divisions)) return '';
+        const division = divisions.find(d => String(d.id) === String(id));
+        return division ? division.nom : '';
     };
 
     const getDivisionColor = divId => {
+        if (!divisions || !Array.isArray(divisions)) return '#64748b';
         const div = divisions.find(d => String(d.id) === String(divId));
         return div ? (div.couleur || '#64748b') : '#64748b';
     };
@@ -1070,12 +1072,14 @@ const convert = data => {
 async function loadAllData() {
     if (!gristReady) return;
     try {
-        const [td,pd,md]=await Promise.all([
+        const [td,pd,md,dd,mm]=await Promise.all([
             grist.docApi.fetchTable('Tasks'),
             grist.docApi.fetchTable('Projects'),
             grist.docApi.fetchTable('Team'),
+            grist.docApi.fetchTable('Divisions').catch(()=>({})),
+            grist.docApi.fetchTable('Moa').catch(()=>({})),
         ]);
-        tasks=convert(td); projects=convert(pd); team=convert(md);
+        tasks=convert(td); projects=convert(pd); team=convert(md); divisions=convert(dd); moa=convert(mm);
         render();
     } catch(e) { console.log('Error loading data:', e); }
 }
