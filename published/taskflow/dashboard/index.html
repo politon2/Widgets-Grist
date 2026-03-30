@@ -880,8 +880,8 @@ function renderProjects(comp, ft) {
     };
 
     const getDivisionName = id => {
-        const div = divisions.find(d => String(d.id) === String(id));
-        return div ? div.nom : '';
+        const division = divisions.find(d => String(d.id) === String(id));
+        return division ? division.nom : '';
     };
 
     const getDivisionColor = divId => {
