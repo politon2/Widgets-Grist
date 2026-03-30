@@ -915,24 +915,6 @@ function renderProjects(comp, ft) {
     };
 
     return `<div class="projects-list">${active.filter(p => stats[p.id]).map(p => {
-        const s = stats[p.id] || { total:0, done:0 };
-        const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
-        const projectTasks = byProjTasks[p.id] || [];
-
-        const fonctionnels = getAssigneesByCategory(projectTasks, 'Fonctionnel');
-        const architectes = getAssigneesByCategory(projectTasks, 'Architecture');
-        const moa = getAssigneesByCategory(projectTasks, 'Budget');
-        const moe = getAssigneesByCategory(projectTasks, 'Transfert');
-        const techniques = getAssigneesByCategory(projectTasks, 'Technique');
-
-        const responsableName = getMemberName(p.responsable);
-        const moaName = getMemberName(p.moa);
-        const divisionName = getDivisionName(p.division);
-        const divisionColor = getDivisionColor(p.division);
-        const responsableColor = getMemberColor(p.responsable);
-        const responsableInitials = toInitials(responsableName || '');
-        const moaColor = getMemberColor(p.moa);
-        const moaInitials = toInitials(moaName || '');
 
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
