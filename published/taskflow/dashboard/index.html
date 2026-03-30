@@ -949,11 +949,11 @@ function renderProjects(comp, ft) {
                     ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}"><i class="avatar" style="background:${moaColor};width:20px;height:20px;font-size:0.65rem;line-height:20px">${escapeHtml(moaName)}</i>${escapeHtml(moaName)}</span>` : '<span>—</span>'}
                 </div>
                 <div class="project-badges">
-                    ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
-                    ${renderAssigneeGroup('Architectes', architectes)}
-                    ${renderAssigneeGroup('MOA', moa)}
-                    ${renderAssigneeGroup('MOE', moe)}
-                    ${renderAssigneeGroup('Techniques', techniques)}
+                    ${renderAssigneeGroup('Fonctionnels', fonctionnel)}
+                    ${renderAssigneeGroup('Architectes', architecture)}
+                    ${renderAssigneeGroup('MOA', budget)}
+                    ${renderAssigneeGroup('MOE', transfert)}
+                    ${renderAssigneeGroup('Techniques', technique)}
                 </div>
             </div>
             <div class="project-progress">
