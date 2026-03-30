@@ -952,9 +952,6 @@ function renderProjects(comp, ft) {
                     ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
                     ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}"><i class="avatar" style="background:${moaColor};width:20px;height:20px;font-size:0.65rem;line-height:20px">${escapeHtml(moaInitials)}</i>${escapeHtml(moaName)}</span>` : '<span>—</span>'}
                 </div>
-                <div class="project-badges">
-                    ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
-                </div>
             </div>
             <div class="project-progress">
                 <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
