@@ -164,6 +164,12 @@
         .project-info { flex: 1; min-width: 0; }
         .project-name { font-size: 0.8rem; font-weight: 500; }
         .project-stats { font-size: 0.69rem; color: var(--text-muted); }
+        .project-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; }
+        .project-meta span { display: inline-flex; align-items: center; gap: 4px; }
+        .project-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+        .project-badge { padding: 3px 7px; border-radius: 8px; font-size: 0.65rem; background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 4px; }
+        .project-badge-avatars { display: inline-flex; align-items: center; gap: 2px; }
+        .project-badge-avatar { width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.62rem; color: white; font-weight: 600; text-transform: uppercase; }
         .project-progress { width: 85px; flex-shrink: 0; }
         .project-progress-bar { height: 5px; background: var(--bg); border-radius: 3px; overflow: hidden; }
         .project-progress-fill { height: 100%; background: var(--success); border-radius: 3px; }
@@ -846,22 +852,88 @@ function renderUpcoming(comp, ft) {
 }
 
 function renderProjects(comp, ft) {
-    const active = projects.filter(p=>p.actif!==false);
+    const active = projects.filter(p => p.actif !== false);
     if (!active.length) return '<div class="empty-state"><div class="empty-icon">◧</div><div class="empty-text">Aucun projet actif</div></div>';
+
     const stats = {};
+    const byProjTasks = {};
+
     ft.forEach(t => {
         if (!t.projet) return;
-        if (!stats[t.projet]) stats[t.projet]={ total:0, done:0, prog:0 };
+        if (!stats[t.projet]) stats[t.projet] = { total:0, done:0 };
+        if (!byProjTasks[t.projet]) byProjTasks[t.projet] = [];
+        byProjTasks[t.projet].push(t);
+
         stats[t.projet].total++;
-        if (getStatus(t)==='done') stats[t.projet].done++;
-        stats[t.projet].prog += (t.progression||0);
+        if (getStatus(t) === 'done') stats[t.projet].done++;
     });
-    return `<div class="projects-list">${active.filter(p=>stats[p.id]).map(p => {
-        const s=stats[p.id]||{total:0,done:0};
-        const pct=s.total>0?Math.round(s.done/s.total*100):0;
+
+    const getMemberName = id => {
+        const member = team.find(m => String(m.id) === String(id));
+        return member ? member.nom : '';
+    };
+
+    const getMemberColor = id => {
+        const member = team.find(m => String(m.id) === String(id));
+        return member ? (member.couleur || '#64748b') : '#64748b';
+    };
+
+    const toInitials = name => {
+        if (!name) return '?';
+        return name.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2);
+    };
+
+    const getAssigneesByCategory = (projTasks, category) => {
+        const set = new Set();
+        (projTasks || []).forEach(t => {
+            const cat = (t.categorie || '').toLowerCase();
+            if (cat === category.toLowerCase()) {
+                getAssigneesArray(t).forEach(a => set.add(String(a)));
+            }
+        });
+        return [...set];
+    };
+
+    const renderAssigneeGroup = (label, ids) => {
+        if (!ids.length) return '';
+        return `<span class="project-badge"><strong>${label}</strong>${ids.map(id => {
+            const name = getMemberName(id);
+            const initials = toInitials(name);
+            return `<span class="project-badge-avatar" style="background:${getMemberColor(id)}" title="${escapeHtml(name)}">${escapeHtml(initials)}</span>`;
+        }).join('')}</span>`;
+    };
+
+    return `<div class="projects-list">${active.filter(p => stats[p.id]).map(p => {
+        const s = stats[p.id] || { total:0, done:0 };
+        const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
+        const projectTasks = byProjTasks[p.id] || [];
+
+        const fonctionnels = getAssigneesByCategory(projectTasks, 'Fonctionnel');
+        const architectes = getAssigneesByCategory(projectTasks, 'Architecture');
+        const moa = getAssigneesByCategory(projectTasks, 'Budget');
+        const moe = getAssigneesByCategory(projectTasks, 'Transfert');
+        const techniques = getAssigneesByCategory(projectTasks, 'Technique');
+
+        const responsableName = getMemberName(p.responsable);
+
         return `<div class="project-item">
-            <div class="project-color" style="background:${p.couleur||'#6366f1'}"></div>
-            <div class="project-info"><div class="project-name">${escapeHtml(p.nom)}</div><div class="project-stats">${s.done}/${s.total} terminées</div></div>
+            <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
+            <div class="project-info">
+                <div class="project-name">${escapeHtml(p.nom)}</div>
+                <div class="project-stats">${s.done}/${s.total} terminées</div>
+                <div class="project-meta">
+                    <span>Resp: ${escapeHtml(responsableName || '—')}</span>
+                    <span>PRT: ${escapeHtml(p.prt || '—')}</span>
+                    <span>Division: ${escapeHtml(p.division || '—')}</span>
+                </div>
+                <div class="project-badges">
+                    ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
+                    ${renderAssigneeGroup('Architectes', architectes)}
+                    ${renderAssigneeGroup('MOA', moa)}
+                    ${renderAssigneeGroup('MOE', moe)}
+                    ${renderAssigneeGroup('Techniques', techniques)}
+                </div>
+            </div>
             <div class="project-progress">
                 <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
                 <div class="project-progress-text">${pct}%</div>
@@ -869,6 +941,7 @@ function renderProjects(comp, ft) {
         </div>`;
     }).join('')}</div>`;
 }
+
 
 function renderList(comp, ft) {
     const preset = comp.config.preset||'all';
