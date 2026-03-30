@@ -933,11 +933,11 @@ function renderProjects(comp, ft) {
         const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
         const projectTasks = byProjTasks[p.id] || [];
 
-        const fonctionnel = getTasksByCategory(projectTasks, 'Fonctionnel');
-        const architecture = getTasksByCategory(projectTasks, 'Architecture');
-        const budget = getTasksByCategory(projectTasks, 'Budget');
-        const transfert = getTasksByCategory(projectTasks, 'Transfert');
-        const technique = getTasksByCategory(projectTasks, 'Technique');
+//        const fonctionnel = getTasksByCategory(projectTasks, 'Fonctionnel');
+//       const architecture = getTasksByCategory(projectTasks, 'Architecture');
+//        const budget = getTasksByCategory(projectTasks, 'Budget');
+//        const transfert = getTasksByCategory(projectTasks, 'Transfert');
+//        const technique = getTasksByCategory(projectTasks, 'Technique');
 
         const responsableName = getMemberName(p.responsable);
         const moaName = getMoaName(p.moa);
