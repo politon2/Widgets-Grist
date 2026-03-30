@@ -920,10 +920,7 @@ function renderProjects(comp, ft) {
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
             <div class="project-info">
                 <div class="project-name">${escapeHtml(p.nom)}</div>
-            </div>
-            <div class="project-progress">
-                <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
-                <div class="project-progress-text">${pct}%</div>
+                <div class="project-stats">${s.done}/${s.total} terminées</div>
             </div>
         </div>`;
     }).join('')}</div>`;
