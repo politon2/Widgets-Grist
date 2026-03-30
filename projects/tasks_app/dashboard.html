@@ -361,15 +361,16 @@ const DEFAULT_LAYOUT = [
     { id:'c4', type:'kpi',      colSpan:1, title:'En retard',  config:{ metric:'late' } },
     { id:'c5', type:'donut',    colSpan:2, title:'Par statut', config:{ groupBy:'statut' } },
     { id:'c6', type:'bars',     colSpan:2, title:'Par priorité', config:{ groupBy:'priorite' } },
-    { id:'c7', type:'workload', colSpan:2, title:'Charge équipe', config:{} },
-    { id:'c8', type:'upcoming', colSpan:2, title:'Échéances',  config:{ horizon:14 } },
-    { id:'c9', type:'projects', colSpan:2, title:'Projets',    config:{} },
+    { id:'c7', type:'projects', colSpan:2, title:'Projets',    config:{} },
+    { id:'c8', type:'workload', colSpan:2, title:'Charge équipe', config:{ horizon:8 } },
+    { id:'c9', type:'upcoming', colSpan:2, title:'Échéances',  config:{ horizon:14 } },
+    
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════════════════════
-let tasks = [], projects = [], team = [];
+let tasks = [], projects = [], team = [], divisions = [];
 let gristReady = false;
 let isEditMode = false;
 let selectedCompId = null;
@@ -878,6 +879,16 @@ function renderProjects(comp, ft) {
         return member ? (member.couleur || '#64748b') : '#64748b';
     };
 
+    const getDivisionName = divId => {
+        const div = divisions.find(d => String(d.id) === String(divId));
+        return div ? div.nom : '';
+    };
+
+    const getDivisionColor = divId => {
+        const div = divisions.find(d => String(d.id) === String(divId));
+        return div ? (div.couleur || '#64748b') : '#64748b';
+    };
+
     const toInitials = name => {
         if (!name) return '?';
         return name.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2);
@@ -915,6 +926,13 @@ function renderProjects(comp, ft) {
         const techniques = getAssigneesByCategory(projectTasks, 'Technique');
 
         const responsableName = getMemberName(p.responsable);
+        const moaName = getMemberName(p.moa);
+        const divisionName = getDivisionName(p.division);
+        const divisionColor = getDivisionColor(p.division);
+        const responsableColor = getMemberColor(p.responsable);
+        const responsableInitials = toInitials(responsableName || '');
+        const moaColor = getMemberColor(p.moa);
+        const moaInitials = toInitials(moaName || '');
 
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
@@ -922,9 +940,10 @@ function renderProjects(comp, ft) {
                 <div class="project-name">${escapeHtml(p.nom)}</div>
                 <div class="project-stats">${s.done}/${s.total} terminées</div>
                 <div class="project-meta">
-                    <span>Resp: ${escapeHtml(responsableName || '—')}</span>
+                    ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
                     <span>PRT: ${escapeHtml(p.prt || '—')}</span>
-                    <span>Division: ${escapeHtml(p.division || '—')}</span>
+                    ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
+                    ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}"><i class="avatar" style="background:${moaColor};width:20px;height:20px;font-size:0.65rem;line-height:20px">${escapeHtml(moaInitials)}</i>${escapeHtml(moaName)}</span>` : '<span>—</span>'}
                 </div>
                 <div class="project-badges">
                     ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
@@ -1069,12 +1088,13 @@ const convert = data => {
 async function loadAllData() {
     if (!gristReady) return;
     try {
-        const [td,pd,md]=await Promise.all([
+        const [td,pd,md,dd]=await Promise.all([
             grist.docApi.fetchTable('Tasks'),
             grist.docApi.fetchTable('Projects'),
             grist.docApi.fetchTable('Team'),
+            grist.docApi.fetchTable('Divisions').catch(()=>({})),
         ]);
-        tasks=convert(td); projects=convert(pd); team=convert(md);
+        tasks=convert(td); projects=convert(pd); team=convert(md); divisions=convert(dd);
         render();
     } catch(e) { console.log('Error loading data:', e); }
 }
