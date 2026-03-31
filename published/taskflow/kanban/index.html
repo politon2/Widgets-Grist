@@ -635,7 +635,7 @@
                     ${typeIcon ? `<span class="card-type">${typeIcon}</span>` : ''}
                 </div>
                 <div class="card-meta">
-                    ${projectName ? `<span class="card-project"><span class="card-project-manager" style="background:${getProjectManagerColor(t.projet)}">${escapeHtml(getInitials(getProjectManagerName(t.projet)))}</span> ${escapeHtml(projectName)} : ''}</span>` : ''}
+                    ${projectName ? `<span class="card-project"><span class="card-project-manager" style="background:${getProjectManagerColor(t.projet)}">${escapeHtml(getInitials(getProjectManagerName(t.projet)))}</span> ${escapeHtml(projectName)} </span>` : ''}
                     ${deps.length ? `<span class="card-deps">← ${deps.length}</span>` : ''}
                 </div>
                 ${t.type !== 'jalon' ? `<div class="card-progress" onclick="event.stopPropagation();setCardProgress(event, ${t.id})"><div class="card-progress-fill p${p}" style="width:${t.progression || 0}%"></div></div>` : ''}
