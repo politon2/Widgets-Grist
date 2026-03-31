@@ -550,6 +550,8 @@
 
         const PRIORITY_LABELS = { 1: 'Critique', 2: 'Haute', 3: 'Moyenne', 4: 'Basse' };
         const PRIORITY_COLORS = { 1: '#ef4444', 2: '#f59e0b', 3: '#3b82f6', 4: '#64748b' };
+        const STATUS_LABELS = { todo: 'À faire', inprogress: 'En cours', review: 'En revue', done: 'Terminé' };
+        const COLOR_PRESETS = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#64748b', '#94a3b8'];
         const STATUS_CONFIG = { todo: 'À faire', inprogress: 'En cours', review: 'En revue', done: 'Terminé' };
         const TYPE_ICONS = { tache: '', jalon: '◆', reunion: '' };
         const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
@@ -628,6 +630,7 @@
             return new Date(y, m - 1, d, 12, 0, 0);
         };
         const formatDate = (d, f='short') => { if (!d) return ''; if (f === 'short') return d.getDate() + ' ' + MONTHS[d.getMonth()].substring(0,3).toLowerCase(); if (f === 'full') return DAYS_FULL[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()].toLowerCase(); if (f === 'iso') return d.toISOString().split('T')[0]; return d.toLocaleDateString('fr-FR'); };
+        const formatDateInput = (d) => d ? d.toISOString().split('T')[0] : '';
         const isSameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
         const isToday = (d) => isSameDay(d, new Date());
         const isWeekend = (d) => { const w = d.getDay(); return w === 0 || w === 6; };
@@ -1491,6 +1494,14 @@
             document.getElementById('panelOverlay').classList.add('visible');
         }
 
+        function confirmClosePanel() {
+            if (panelState.isNew && panelState.editData?.titre?.trim()) {
+                if (confirm('Fermer sans créer la tâche ?')) closePanel();
+            } else {
+                closePanel();
+            }
+        }
+
         function closePanel() {
             panelState.open = false;
             document.getElementById('panel').classList.remove('open');
@@ -1675,49 +1686,183 @@
             const header = document.getElementById('panelHeader');
             const content = document.getElementById('panelContent');
             const footer = document.getElementById('panelFooter');
-
             const data = panelState.editData;
             if (!data) { backToPeriod(); return; }
 
             const canNavigate = panelState.periodTasks.length > 1 && !panelState.isNew;
             const navLabel = !panelState.isNew && panelState.periodTasks.length > 1 ? `${panelState.taskIndex + 1}/${panelState.periodTasks.length}` : '';
-            header.innerHTML = `
-                <div class="panel-nav">
-                    <button class="panel-nav-btn" onclick="backToPeriod()" title="Retour">←</button>
-                    <button class="panel-nav-btn" onclick="navigatePanelTask(-1)" ${!canNavigate ? 'disabled' : ''}>◀</button>
-                    ${navLabel ? `<span class="panel-title">${navLabel}</span>` : ''}
-                    <button class="panel-nav-btn" onclick="navigatePanelTask(1)" ${!canNavigate ? 'disabled' : ''}>▶</button>
-                </div>
-                <button class="panel-close" onclick="closePanel()">×</button>
-            `;
+            header.innerHTML = `<div class="panel-nav"><button class="panel-nav-btn" onclick="backToPeriod()" title="Retour">←</button><button class="panel-nav-btn" onclick="navigatePanelTask(-1)" ${!canNavigate ? 'disabled' : ''}>◀</button>${navLabel ? `<span class="panel-title">${navLabel}</span>` : ''}<button class="panel-nav-btn" onclick="navigatePanelTask(1)" ${!canNavigate ? 'disabled' : ''}>▶</button></div><button class="panel-close" onclick="confirmClosePanel()">×</button>`;
 
-            const s = gristToDate(data.dateDebut);
-            const e = gristToDate(data.dateEcheance);
+            const s = gristToDate(data.dateDebut), e = gristToDate(data.dateEcheance);
             const priorityColor = PRIORITY_COLORS[getPriority(data)] || '#94a3b8';
             const currentProject = projects.find(p => p.id === data.projet);
             const projectColor = currentProject?.couleur || '#94a3b8';
-            const projectOptions = projects.filter(p => p.actif !== false).map(p =>
-                `<option value="${p.id}" ${data.projet === p.id ? 'selected' : ''}>${escapeHtml(p.nom)}</option>`
-            ).join('');
+            const projectOptions = projects.filter(p => p.actif !== false).map(p => `<option value="${p.id}" ${data.projet === p.id ? 'selected' : ''}>${escapeHtml(p.nom)}</option>`).join('');
             const subtasksDone = (data.subtasks || []).filter(st => st.done).length;
             const subtasksTotal = (data.subtasks || []).length;
-            const descLabel = data.type === 'reunion' ? 'Ordre du jour' : data.type === 'jalon' ? "Critères d'acceptation" : 'Description';
+            const descLabel = data.type === 'reunion' ? 'Ordre du jour' : data.type === 'jalon' ? 'Critères d\'acceptation' : 'Description';
             const assignLabel = data.type === 'reunion' ? 'Participants' : 'Assignés';
             const titlePlaceholder = data.type === 'jalon' ? 'Nom du jalon...' : data.type === 'reunion' ? 'Sujet de la réunion...' : 'Titre de la tâche...';
 
             // Assignés
             const assigneesChips = data.assignees.map(id => `<span class="multi-select-chip">${escapeHtml(getTeamMemberName(id))}<span class="remove" onclick="event.stopPropagation();removeAssignee(${id})">×</span></span>`).join('');
-            const assigneesOptions = team.filter(m => m.actif !== false).map(m =>
-                `<div class="multi-select-option ${data.assignees.includes(m.id) ? 'selected' : ''}" onclick="toggleAssignee(${m.id})"><input type="checkbox" ${data.assignees.includes(m.id) ? 'checked' : ''} onclick="event.stopPropagation();toggleAssignee(${m.id})"><div style="width:10px;height:10px;border-radius:50%;background:${getTeamMemberColor(m.id)};display:inline-block;margin-right:4px;flex-shrink:0"></div>${escapeHtml(m.nom)}</div>`
-            ).join('');
-
-            // Dépendances
-            const depsChips = data.dependDe.map(id => {
-                const d = tasks.find(t => t.id === id);
-                return d ? `<span class="multi-select-chip">${escapeHtml(d.titre)}<span class="remove" onclick="event.stopPropagation();removeDependency(${id})">×</span></span>` : '';
+            // A15: Options membres avec dot couleur + swatches preset
+            const assigneesOptions = team.filter(m => m.actif !== false).map(m => {
+                const swatches = COLOR_PRESETS.map(c => `<span class="color-swatch" style="background:${c}" onclick="event.stopPropagation();setMemberColor(${m.id},'${c}')"></span>`).join('');
+                return `<div class="multi-select-option ${data.assignees.includes(m.id) ? 'selected' : ''}" onclick="toggleAssignee(${m.id})"><div class="member-color-wrap"><span class="member-color-dot" style="background:${getTeamMemberColor(m.id)}" onclick="event.stopPropagation();this.nextElementSibling.classList.toggle('open')"></span><div class="member-color-picker">${swatches}</div></div><input type="checkbox" ${data.assignees.includes(m.id) ? 'checked' : ''} onclick="event.stopPropagation();toggleAssignee(${m.id})">${escapeHtml(m.nom)}</div>`;
             }).join('');
+
+            // Dépendances (pour tâche uniquement)
+            const depsChips = data.dependDe.map(id => { const d = tasks.find(t => t.id === id); return d ? `<span class="multi-select-chip">${escapeHtml(d.titre)}<span class="remove" onclick="event.stopPropagation();removeDependency(${id})">×</span></span>` : ''; }).join('');
             const availableDeps = panelState.isNew ? tasks.filter(t => t.projet === data.projet) : getAvailableDependencies(panelState.taskId, data.projet);
-            const depsOptions = availableDeps.map(t =>
+            const depsOptions = availableDeps.map(t => `<div class="multi-select-option ${data.dependDe.includes(t.id) ? 'selected' : ''}" onclick="toggleDependency(${t.id})"><input type="checkbox" ${data.dependDe.includes(t.id) ? 'checked' : ''} onclick="event.stopPropagation();toggleDependency(${t.id})">${escapeHtml(t.titre)}</div>`).join('');
+            let blockedHtml = '';
+            if (!panelState.isNew) { const blocked = getBlockedTasks(panelState.taskId); if (blocked.length) blockedHtml = `<div class="deps-display"><div class="deps-group"><div class="deps-group-label">→ Bloque :</div><div class="deps-list">${blocked.map(t => `<div class="dep-item" onclick="openTaskPanel(${t.id})">→ ${escapeHtml(t.titre)}</div>`).join('')}</div></div></div>`; }
+
+            // Tags & Temps
+            const tagsChips = data.tags.map(tag => `<span class="tag-chip">#${escapeHtml(tag)}<span class="remove" onclick="removeTag('${escapeHtml(tag)}')">×</span></span>`).join('');
+            const estim = data.estimationH || 0, passe = data.tempsPasse || 0;
+            const timePercent = estim > 0 ? Math.min((passe / estim) * 100, 100) : 0, timeOver = passe > estim && estim > 0;
+
+            // Prérequis jalon (auto depuis dependDe)
+            const doneCount = data.dependDe.filter(id => { const t = tasks.find(x => x.id === id); return t?.statut === 'done'; }).length;
+            const prereqHtml = data.dependDe.map(id => {
+                const t = tasks.find(x => x.id === id);
+                if (!t) return '';
+                const st = t.statut || 'todo';
+                return `<div class="prereq-item ${st === 'done' ? 'done' : ''}" onclick="openTaskPanel(${id})"><span class="prereq-item-icon">${st === 'done' ? '✓' : '○'}</span><span class="prereq-item-title">${escapeHtml(t.titre)}</span><span class="prereq-badge ${st}">${STATUS_LABELS[st] || st}</span></div>`;
+            }).join('');
+
+            content.innerHTML = `
+                <div class="panel-accent-bar" style="background:${priorityColor}"></div>
+                <div class="panel-type-row">
+                    <span class="type-pill ${data.type === 'tache' ? 'selected' : ''}" onclick="updateField('type','tache')">Tâche</span>
+                    <span class="type-pill ${data.type === 'jalon' ? 'selected' : ''}" onclick="updateField('type','jalon')">◆ Jalon</span>
+                    <span class="type-pill ${data.type === 'reunion' ? 'selected' : ''}" onclick="updateField('type','reunion')"> Réunion</span>
+                </div>
+                <input type="text" class="panel-title-edit" id="taskTitle" placeholder="${titlePlaceholder}" value="${escapeHtml(data.titre)}" oninput="updateField('titre', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();">
+
+                <div class="props-list">
+                    <div class="prop-row">
+                        <span class="prop-label">Statut</span>
+                        <div class="prop-value"><div class="status-selector">
+                            <div class="status-pill ${data.statut === 'todo' ? 'selected' : ''}" onclick="updateField('statut','todo')">À faire</div>
+                            ${data.type !== 'jalon' ? `<div class="status-pill ${data.statut === 'inprogress' ? 'selected' : ''}" onclick="updateField('statut','inprogress')">En cours</div><div class="status-pill ${data.statut === 'review' ? 'selected' : ''}" onclick="updateField('statut','review')">En revue</div>` : ''}
+                            <div class="status-pill ${data.statut === 'done' ? 'selected' : ''}" onclick="updateField('statut','done')">Terminé</div>
+                        </div></div>
+                    </div>
+                    ${data.type !== 'reunion' ? `
+                    <div class="prop-row">
+                        <span class="prop-label">Priorité</span>
+                        <div class="prop-value"><div class="priority-selector">
+                            <div class="priority-pill p1 ${data.priorite == '1' ? 'selected' : ''}" onclick="updateField('priorite','1')">Critique</div>
+                            <div class="priority-pill p2 ${data.priorite == '2' ? 'selected' : ''}" onclick="updateField('priorite','2')">Haute</div>
+                            <div class="priority-pill p3 ${data.priorite == '3' ? 'selected' : ''}" onclick="updateField('priorite','3')">Moyenne</div>
+                            <div class="priority-pill p4 ${data.priorite == '4' ? 'selected' : ''}" onclick="updateField('priorite','4')">Basse</div>
+                        </div></div>
+                    </div>` : ''}
+                    <div class="prop-row">
+                        <span class="prop-label">Date${data.type === 'jalon' ? '' : 's'}</span>
+                        <div class="prop-value">${data.type === 'jalon'
+                            ? `<div class="dates-inline"><input type="date" value="${formatDateInput(s)}" onchange="updateField('dateDebut', this.value); updateField('dateEcheance', this.value)"><button class="today-btn" onclick="setTodayDate()">Auj.</button></div>`
+                            : `<div class="dates-inline"><input type="date" value="${formatDateInput(s)}" onchange="updateField('dateDebut', this.value)"><span class="dates-arrow">→</span><input type="date" value="${formatDateInput(e)}" onchange="updateField('dateEcheance', this.value)"><button class="today-btn" onclick="setTodayDate()">Auj.</button></div>`
+                        }</div>
+                    </div>
+                    <div class="prop-row">
+                        <span class="prop-label">Projet</span>
+                        <div class="prop-value"><div class="project-select-wrap"><span class="project-color-dot" style="background:${projectColor}"></span><select class="form-select" onchange="updateField('projet', parseInt(this.value) || null)"><option value="">Aucun projet</option>${projectOptions}</select></div></div>
+                    </div>
+                    <div class="prop-row">
+                        <span class="prop-label">${assignLabel}</span>
+                        <div class="prop-value"><div class="multi-select" id="assigneesSelect"><div class="multi-select-trigger" onclick="toggleMultiSelect('assigneesSelect')"><div class="multi-select-values">${assigneesChips || '<span class="multi-select-placeholder">Assigner à...</span>'}</div><span class="multi-select-arrow">▾</span></div><div class="multi-select-dropdown">${assigneesOptions || '<div class="multi-select-empty">Aucun membre</div>'}</div></div></div>
+                    </div>
+                    ${data.type === 'tache' ? `
+                    <div class="prop-row">
+                        <span class="prop-label">Progression</span>
+                        <div class="prop-value">
+                            <div class="progress-inline-wrap">
+                                <div class="progress-bar-mini"><div class="progress-bar-mini-fill" id="progressBarFill" style="width:${data.progression}%"></div></div>
+                                <span class="progress-pct-label" id="progressValue">${data.progression}%</span>
+                            </div>
+                            <input type="range" class="progress-slider" min="0" max="100" value="${data.progression}" oninput="document.getElementById('progressValue').textContent=this.value+'%';document.getElementById('progressBarFill').style.width=this.value+'%'" onchange="updateField('progression', parseInt(this.value))">
+                            <div class="progress-presets">
+                                <div class="progress-preset ${data.progression === 0 ? 'active' : ''}" onclick="setProgressPreset(0)">0%</div>
+                                <div class="progress-preset ${data.progression === 25 ? 'active' : ''}" onclick="setProgressPreset(25)">25%</div>
+                                <div class="progress-preset ${data.progression === 50 ? 'active' : ''}" onclick="setProgressPreset(50)">50%</div>
+                                <div class="progress-preset ${data.progression === 75 ? 'active' : ''}" onclick="setProgressPreset(75)">75%</div>
+                                <div class="progress-preset ${data.progression === 100 ? 'active' : ''}" onclick="setProgressPreset(100)">100%</div>
+                            </div>
+                        </div>
+                    </div>` : ''}
+                </div>
+
+                <!-- Description / Ordre du jour / Critères -->
+                <div class="panel-section">
+                    <div class="panel-section-header"><span class="panel-section-title">${descLabel}</span></div>
+                    <div class="form-group"><textarea class="form-textarea" placeholder="${descLabel}..." oninput="updateField('description', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();">${escapeHtml(data.description)}</textarea></div>
+                </div>
+
+                <!-- Prérequis (jalon) ou Checklist (tâche/réunion) -->
+                ${data.type === 'jalon' ? `
+                <div class="panel-section">
+                    <div class="panel-section-header"><span class="panel-section-title">Prérequis</span>${data.dependDe.length ? `<span class="panel-section-badge">${doneCount}/${data.dependDe.length}</span>` : ''}</div>
+                    <div class="prereq-list">${prereqHtml || '<div class="prereq-empty">Aucune dépendance — liez des tâches amont via le panneau Dépendances d\'une tâche.</div>'}</div>
+                </div>
+                ` : `
+                <div class="panel-section">
+                    <div class="panel-section-header"><span class="panel-section-title">${data.type === 'reunion' ? 'Points à traiter' : 'Checklist'}</span>${subtasksTotal > 0 ? `<span class="panel-section-badge">${subtasksDone}/${subtasksTotal}</span>` : ''}</div>
+                    <div class="subtask-list">${(data.subtasks || []).map(st => `<div class="subtask-item ${st.done ? 'done' : ''}"><input type="checkbox" class="subtask-checkbox" ${st.done ? 'checked' : ''} onchange="toggleSubtask(${st.id})"><span class="subtask-text">${escapeHtml(st.text)}</span><button class="subtask-remove" onclick="removeSubtask(${st.id})">×</button></div>`).join('')}</div>
+                    <div class="subtask-add"><input type="text" id="newSubtaskInput" placeholder="Ajouter..." onkeydown="handleSubtaskKeydown(event)"><button onclick="addSubtask()">+</button></div>
+                </div>
+                `}
+
+                <!-- DDS pour tâches architecture = DDS Archi-->
+                ${data.categorie === 'architecture' && data.type === 'tache' ? `
+                <div class="panel-section">
+                    <div class="panel-section-header"><span class="panel-section-title">DDS Archi</span></div>
+                    <div class="form-group"><div class="tags-input"><input type="text" id="ddsArchiInput" placeholder="DDS Archi..." value="${escapeHtml(data.dds)}" oninput="updateField('dds', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();"></div></div>
+                </div>
+                ` : ''}
+
+                <!-- DDS pour tâches technique = DDS Sécurité-->
+                ${data.categorie === 'technique' && data.type === 'tache' ? `
+                <div class="panel-section">
+                    <div class="panel-section-header"><span class="panel-section-title">DDS Instruction Sécurité</span></div>
+                    <div class="form-group"><div class="tags-input"><input type="text" id="ddsSecuriteInput" placeholder="DDS Sécurité..." value="${escapeHtml(data.dds)}" oninput="updateField('dds', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();"></div></div>
+                </div>
+                ` : ''}
+
+                <!-- DDS pour tâches Budget = FIR-->
+                ${data.categorie === 'budget' && data.type === 'tache' ? `
+                <div class="panel-section">
+                    <div class="panel-section-header"><span class="panel-section-title">FIR</span></div>
+                    <div class="form-group"><div class="tags-input"><input type="text" id="firInput" placeholder="FIR..." value="${escapeHtml(data.dds)}" oninput="updateField('dds', this.value, true)" onblur="if (!panelState.isNew && gristReady) saveTaskToGrist();"></div></div>
+                </div>
+                ` : ''}
+
+                <!-- Détails : temps + tags + dépendances (hors jalon) -->
+                ${data.type !== 'jalon' ? `
+                <div class="panel-section">
+                    <div class="panel-section-header"><span class="panel-section-title">Détails</span></div>
+                    
+                    <!-- Temps estimé/passé pour les tâches et réunions -->
+                    <!--
+                        ${data.type !== 'reunion' ? `
+                        <div class="form-group"><div class="time-row"><div class="time-group"><label>Estimé</label><div class="time-input-wrap"><input type="number" min="0" step="0.5" value="${estim || ''}" placeholder="0" onchange="updateField('estimationH', parseFloat(this.value) || null)"><span>h</span></div></div><div class="time-group"><label>Passé</label><div class="time-input-wrap"><input type="number" min="0" step="0.5" value="${passe || ''}" placeholder="0" onchange="updateField('tempsPasse', parseFloat(this.value) || null)"><span>h</span></div></div></div>${estim > 0 ? `<div class="time-bar"><div class="time-bar-fill ${timeOver ? 'over' : ''}" style="width:${timePercent}%"></div></div>` : ''}</div>
+                        ` : ''}
+                    -->
+                    <div class="form-group"><div class="tags-input" onclick="document.getElementById('tagInput').focus()">${tagsChips}<input type="text" id="tagInput" placeholder="Ajouter un tag..." onkeydown="handleTagKeydown(event)"></div></div>
+                    ${data.type !== 'reunion' ? `
+                    <div class="form-group"><div class="multi-select" id="depsSelect"><div class="multi-select-trigger" onclick="toggleMultiSelect('depsSelect')"><div class="multi-select-values">${depsChips || '<span class="multi-select-placeholder">Dépendances...</span>'}</div><span class="multi-select-arrow">▾</span></div><div class="multi-select-dropdown">${depsOptions || '<div class="multi-select-empty">Aucune</div>'}</div></div>${blockedHtml}</div>
+                    ` : ''}
+                </div>
+                ` : ''}
+            `;
+
+            footer.innerHTML = panelState.isNew
+                ? `<button class="panel-btn success" onclick="createTask()" ${!data.titre?.trim() ? 'disabled' : ''}>Créer la tâche</button>`
+                : `<div class="panel-footer-left"><button class="panel-btn danger" onclick="showDeleteConfirm()" style="width:auto;padding:10px 14px">Suppr.</button></div><div class="panel-footer-right"><div class="delete-confirm" id="deleteConfirm" style="display:none;position:fixed;bottom:60px;right:16px;background:#fef2f2;border:1px solid var(--danger);border-radius:8px;padding:10px;z-index:100"><span style="font-size:0.8rem;margin-right:8px">Supprimer ?</span><button class="panel-btn" style="width:auto;padding:6px 12px;font-size:0.75rem" onclick="hideDeleteConfirm()">Non</button><button class="panel-btn" style="width:auto;padding:6px 12px;font-size:0.75rem;background:var(--danger);margin-left:4px" onclick="confirmDelete()">Oui</button></div></div>`;
+        }
                 `<div class="multi-select-option ${data.dependDe.includes(t.id) ? 'selected' : ''}" onclick="toggleDependency(${t.id})"><input type="checkbox" ${data.dependDe.includes(t.id) ? 'checked' : ''} onclick="event.stopPropagation();toggleDependency(${t.id})">${escapeHtml(t.titre)}</div>`
             ).join('');
             let blockedHtml = '';
@@ -2014,6 +2159,21 @@
             }
         }
         
+        // A15: Mise à jour couleur membre dans la table Team
+        async function setMemberColor(memberId, color) {
+            const m = team.find(x => x.id === memberId);
+            if (!m) return;
+            m.couleur = color;  // Mise à jour locale immédiate
+            if (gristReady) {
+                try {
+                    await grist.docApi.applyUserActions([['UpdateRecord', 'Team', memberId, { couleur: color }]]);
+                    showSaveIndicator();
+                } catch (e) { showToast('Erreur mise à jour couleur', 'error'); }
+            }
+            renderPanelTask();
+            render();
+        }
+        
         function toggleDependency(id) {
             const data = panelState.editData;
             const idx = data.dependDe.indexOf(id);
@@ -2205,36 +2365,41 @@
             }
         }
         
-        function useDemoMode() {
+        f        function useDemoMode() {
             document.body.insertAdjacentHTML('beforeend', '<div class="demo-badge">Démo</div>');
-
+            divisions = [
+                { id: 1, nom: 'D1', libelle: 'Division 1', couleur: '#4f46e5'},
+                { id: 2, nom: 'D2', libelle: 'Division 2', couleur: '#4f46e5'}
+            ];
+            moa = [
+                { id: 1, nom: 'DTEST1', responable: 'Sophie FONSEC', couleur: '#4f46e5'},
+                { id: 2, nom: 'DTEST2', responable: 'Jean DUPONT', couleur: '#10b981'}
+            ];
             team = [
                 { id: 1, nom: 'Alice Martin', actif: true, couleur: '#4f46e5' },
                 { id: 2, nom: 'Bob Durant', actif: true, couleur: '#10b981' },
                 { id: 3, nom: 'Claire Bernard', actif: true, couleur: '#f59e0b' }
             ];
             projects = [
-                { id: 1, nom: 'Refonte Portail', couleur: '#4f46e5', actif: true },
-                { id: 2, nom: 'App Mobile', couleur: '#10b981', actif: true },
-                { id: 3, nom: 'API v2', couleur: '#f59e0b', actif: true }
+                { id: 1, nom: 'Refonte Portail', couleur: '#4f46e5', actif: true, division: 1 },
+                { id: 2, nom: 'App Mobile', couleur: '#10b981', actif: true, division: 1 },
+                { id: 3, nom: 'API v2', couleur: '#f59e0b', actif: true, division: 2 }
             ];
-
             const today = new Date();
             const day = (d) => dateToGrist(new Date(today.getFullYear(), today.getMonth(), today.getDate() + d));
-
             tasks = [
-                { id: 1, titre: 'Analyse besoins', priorite: '1', projet: 1, dateDebut: day(-10), dateEcheance: day(-5), progression: 100, statut: 'done', type: 'tache', assignees: ['L', 1], tags: ['L', 'documentation'] },
-                { id: 2, titre: 'Dev Backend', priorite: '1', projet: 1, dateDebut: day(-4), dateEcheance: day(2), progression: 60, statut: 'inprogress', type: 'tache', dependDe: ['L', 1], assignees: ['L', 1, 2], estimationH: 32, tempsPasse: 12 },
+                { id: 1, titre: 'Analyse besoins', priorite: '1', projet: 1, dateDebut: day(-10), dateEcheance: day(-5), progression: 100, statut: 'done', type: 'tache', categorie: 'architeure', assignees: ['L', 1], tags: ['L', 'documentation'] },
+                { id: 2, titre: 'Dev Backend', priorite: '1', projet: 1, dateDebut: day(-4), dateEcheance: day(2), progression: 60, statut: 'inprogress', type: 'tache', categorie: 'architeure', dependDe: ['L', 1], assignees: ['L', 1, 2], estimationH: 32, tempsPasse: 12 },
                 { id: 3, titre: 'Design UI', priorite: '2', projet: 2, dateDebut: day(-5), dateEcheance: day(1), progression: 80, statut: 'review', type: 'tache', assignees: ['L', 3] },
-                { id: 4, titre: 'Livraison MVP', priorite: '1', projet: 1, dateDebut: day(15), dateEcheance: day(15), progression: 0, statut: 'todo', type: 'jalon', dependDe: ['L', 2], assignees: ['L', 1] },
+                { id: 4, titre: 'Livraison MVP', priorite: '1', projet: 1, dateDebut: day(15), dateEcheance: day(15), progression: 0, statut: 'todo', type: 'jalon', categorie: 'fonctionnel', dependDe: ['L', 2], assignees: ['L', 1] },
                 { id: 5, titre: 'Tests QA', priorite: '3', projet: 2, dateDebut: day(5), dateEcheance: day(12), progression: 0, statut: 'todo', type: 'tache', assignees: ['L', 2], tags: ['L', 'qa', 'tests'] },
                 { id: 6, titre: 'Documentation', priorite: '4', projet: 3, dateDebut: day(-2), dateEcheance: day(-1), progression: 20, statut: 'inprogress', type: 'tache', assignees: ['L', 3] },
                 { id: 7, titre: 'Correction bugs', priorite: '2', projet: 1, dateDebut: day(0), dateEcheance: day(3), progression: 10, statut: 'inprogress', type: 'tache', assignees: ['L', 2] },
                 { id: 8, titre: 'Réunion client', priorite: '2', projet: 2, dateDebut: day(7), dateEcheance: day(7), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 1, 3] },
                 { id: 9, titre: 'Migration DB', priorite: '1', projet: 3, dateDebut: day(-3), dateEcheance: day(0), progression: 90, statut: 'review', type: 'tache', assignees: ['L', 1] },
-                { id: 10, titre: 'Formation équipe', priorite: '3', projet: 1, dateDebut: day(10), dateEcheance: day(14), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 2, 3] }
+                { id: 10, titre: 'Formation équipe', priorite: '3', projet: 1, dateDebut: day(10), dateEcheance: day(14), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 2, 3], dds: 'XXX0001' }
             ];
-
+            
             updateFilterMenus();
             render();
         }
