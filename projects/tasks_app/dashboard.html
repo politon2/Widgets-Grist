@@ -930,8 +930,9 @@ function renderProjects(comp, ft) {
 
     return `<div class="projects-list">${active.filter(p => stats[p.id]).map(p => {
         const s = stats[p.id] || { total:0, done:0 };
-        const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
         const projectTasks = byProjTasks[p.id] || [];
+        const progressionValues = projectTasks.map(t => parseFloat(t.progression) || 0);
+        const pct = progressionValues.length > 0 ? Math.round(progressionValues.reduce((a,b) => a + b, 0) / progressionValues.length) : 0;
 
         const fonctionnels = getAssigneesByCategory(projectTasks, 'Fonctionnel');
         const architectes = getAssigneesByCategory(projectTasks, 'Architecture');
