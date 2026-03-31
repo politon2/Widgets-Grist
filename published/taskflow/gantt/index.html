@@ -422,7 +422,17 @@
                     <div class="filter-option" onclick="exportPNG()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Image PNG</div>
                 </div>
             </div>
-            <button class="btn primary" onclick="openCreatePanel()">+ Tâche</button>
+            <div class="filter-dropdown" id="createTaskDropdown">
+                <button class="btn primary" onclick="toggleFilterMenu('create')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg> Tâche ▾</button>
+                <div class="filter-menu" id="filterCreateMenu">
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('architecture')">🏗️ Architecture</div>
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('fonctionnel')">⚙️ Fonctionnel</div>
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('technique')">🔧 Technique</div>
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('budget')">💰 Budget</div>
+                    <div class="filter-option" onclick="openCreatePanelWithCategory('transfert')">🔄 Transfert</div>
+                    
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1308,6 +1318,36 @@
             setTimeout(() => { const el = document.getElementById('taskTitle'); if (el) el.focus(); }, 100);
         }
 
+        function openCreatePanelWithCategory(categorie) {
+            const categoryPresets = {
+                architecture: { priorite: '3', type: 'tache', titre: 'Architecture', description: 'Tâche d\'architecture', subtasks: [{ id: Date.now(), text: 'Créer DDS', done: false }, { id: Date.now() + 1, text: 'Kickoff', done: false }, { id: Date.now() + 2, text: 'DAv0', done: false }, { id: Date.now() + 3, text: 'DAv1', done: false }] },
+                fonctionnel: { priorite: '3', type: 'tache', titre: 'Fonctionnel', description: 'Tâche fonctionnelle', subtasks: [{ id: Date.now(), text: 'Expression de Besoins', done: false }, { id: Date.now() + 1, text: 'Présentation MOA', done: false }, { id: Date.now() + 2, text: 'CdC v0', done: false }, { id: Date.now() + 3, text: 'CdC v1 ou SFG', done: false }] },
+                budget: { priorite: '3', type: 'tache', titre: 'Budget', description: 'Tâche budgétaire', subtasks: [{ id: Date.now(), text: 'Budget Roadmap', done: false }, { id: Date.now() + 1, text: 'PRT Palier', done: false }, { id: Date.now() + 2, text: 'Budget projet validé', done: false }] },
+                transfert: { priorite: '3', type: 'tache', titre: 'Transfert', description: 'Tâche de transfert', subtasks: [{ id: Date.now(), text: 'Support de transfert', done: false }, { id: Date.now() + 1, text: 'Nomination équipe projet', done: false }, { id: Date.now() + 2, text: 'Présentation MOE', done: false }, { id: Date.now() + 3, text: 'Demande d\'EPC', done: false }, { id: Date.now() + 4, text: 'Présentation TMA', done: false }] },
+                technique: { priorite: '3', type: 'tache', titre: 'Technique', description: 'Tâche technique', subtasks: [{ id: Date.now(), text: 'Créer DDS Sécurité', done: false }, { id: Date.now() + 1, text: 'Réunion ENF', done: false }, { id: Date.now() + 2, text: 'Revue technique', done: false }] }
+            };
+            const preset = categoryPresets[categorie] || {};
+            openCreatePanelForColumnWithPreset(preset, categorie);
+            toggleFilterMenu('create'); // Fermer le menu après sélection
+        }
+
+        function openCreatePanelForColumnWithPreset(preset, categorie) {
+            const today = new Date();
+            panelState = {
+                open: true, isNew: true, taskId: null, taskIndex: -1, taskList: panelState.taskList,
+                editData: {
+                    titre: preset.titre || '', description: preset.description || '', type: preset.type || 'tache', priorite: preset.priorite || '3', statut: preset.statut || 'todo', progression: 0,
+                    dateDebut: dateToGrist(today), dateEcheance: dateToGrist(addDays(today, 7)),
+                    projet: preset.projet !== undefined ? preset.projet : (projects.length > 0 ? projects[0].id : null),
+                    assignees: [], dependDe: [], tags: [], estimationH: preset.estimationH || null, tempsPasse: null, subtasks: normalizeSubtasks(preset.subtasks), categorie: categorie
+                }
+            };
+            renderPanel();
+            openPanel();
+            render();
+            setTimeout(() => { const el = document.getElementById('taskTitle'); if (el) el.focus(); }, 100);
+        }
+
         function cloneTaskData(task) {
             return {
                 titre: task.titre || '', description: task.description || '', type: task.type || 'tache',
@@ -1356,12 +1396,12 @@
             const data = panelState.editData;
             if (!data) { closePanel(); return; }
 
-            const canNavigate = panelState.taskList.length > 1 && !panelState.isNew;
-            const navLabel = !panelState.isNew && panelState.taskList.length > 1 ? `${panelState.taskIndex + 1}/${panelState.taskList.length}` : '';
+            const canNavigate = panelState.columnTasks.length > 1 && !panelState.isNew;
+            const navLabel = !panelState.isNew && panelState.columnTasks.length > 1 ? `${panelState.taskIndex + 1}/${panelState.columnTasks.length}` : '';
             header.innerHTML = `<div class="panel-nav"><button class="panel-nav-btn" onclick="navigatePanelTask(-1)" ${!canNavigate ? 'disabled' : ''}>◀</button>${navLabel ? `<span class="panel-title">${navLabel}</span>` : ''}<button class="panel-nav-btn" onclick="navigatePanelTask(1)" ${!canNavigate ? 'disabled' : ''}>▶</button></div><button class="panel-close" onclick="confirmClosePanel()">×</button>`;
 
             const s = gristToDate(data.dateDebut), e = gristToDate(data.dateEcheance);
-            const priorityColor = PRIORITY_COLORS[getTaskPriority(data)] || '#94a3b8';
+            const priorityColor = PRIORITY_COLORS[getPriority(data)] || '#94a3b8';
             const currentProject = projects.find(p => p.id === data.projet);
             const projectColor = currentProject?.couleur || '#94a3b8';
             const projectOptions = projects.filter(p => p.actif !== false).map(p => `<option value="${p.id}" ${data.projet === p.id ? 'selected' : ''}>${escapeHtml(p.nom)}</option>`).join('');
@@ -1511,7 +1551,7 @@
                 ${data.type !== 'jalon' ? `
                 <div class="panel-section">
                     <div class="panel-section-header"><span class="panel-section-title">Détails</span></div>
-
+                    
                     <!-- Temps estimé/passé pour les tâches et réunions -->
                     <!--
                         ${data.type !== 'reunion' ? `
@@ -1601,6 +1641,14 @@
         function getSubtasks(task) {
             if (!task?.subtasks) return [];
             try { return JSON.parse(task.subtasks); } catch (e) { return []; }
+        }
+        function normalizeSubtasks(subtasks) {
+            if (!subtasks) return [];
+            if (Array.isArray(subtasks)) return subtasks;
+            if (typeof subtasks === 'string') {
+                try { return JSON.parse(subtasks); } catch (e) { return []; }
+            }
+            return [];
         }
         function subtasksToJson(subtasks) {
             return JSON.stringify(subtasks || []);
@@ -2040,35 +2088,39 @@
 
         function useDemoMode() {
             document.body.insertAdjacentHTML('beforeend', '<div class="demo-badge">Démo</div>');
-
+            divisions = [
+                { id: 1, nom: 'D1', libelle: 'Division 1', couleur: '#4f46e5'},
+                { id: 2, nom: 'D2', libelle: 'Division 2', couleur: '#4f46e5'}
+            ];
+            moa = [
+                { id: 1, nom: 'DTEST1', responable: 'Sophie FONSEC', couleur: '#4f46e5'},
+                { id: 2, nom: 'DTEST2', responable: 'Jean DUPONT', couleur: '#10b981'}
+            ];
             team = [
                 { id: 1, nom: 'Alice Martin', actif: true, couleur: '#4f46e5' },
                 { id: 2, nom: 'Bob Durant', actif: true, couleur: '#10b981' },
                 { id: 3, nom: 'Claire Bernard', actif: true, couleur: '#f59e0b' }
             ];
             projects = [
-                { id: 1, nom: 'Refonte Portail', couleur: '#4f46e5', actif: true },
-                { id: 2, nom: 'App Mobile', couleur: '#10b981', actif: true },
-                { id: 3, nom: 'API v2', couleur: '#f59e0b', actif: true }
+                { id: 1, nom: 'Refonte Portail', couleur: '#4f46e5', actif: true, division: 1 },
+                { id: 2, nom: 'App Mobile', couleur: '#10b981', actif: true, division: 1 },
+                { id: 3, nom: 'API v2', couleur: '#f59e0b', actif: true, division: 2 }
             ];
-
             const today = new Date();
             const day = (d) => dateToGrist(new Date(today.getFullYear(), today.getMonth(), today.getDate() + d));
-
             tasks = [
-                { id: 1, titre: 'Analyse besoins', priorite: '1', projet: 1, dateDebut: day(-10), dateEcheance: day(-5), progression: 100, statut: 'done', type: 'tache', assignees: ['L', 1], tags: ['L', 'documentation'] },
-                { id: 2, titre: 'Dev Backend', priorite: '1', projet: 1, dateDebut: day(-4), dateEcheance: day(2), progression: 60, statut: 'inprogress', type: 'tache', dependDe: ['L', 1], assignees: ['L', 1, 2], estimationH: 32, tempsPasse: 12 },
+                { id: 1, titre: 'Analyse besoins', priorite: '1', projet: 1, dateDebut: day(-10), dateEcheance: day(-5), progression: 100, statut: 'done', type: 'tache', categorie: 'architeure', assignees: ['L', 1], tags: ['L', 'documentation'] },
+                { id: 2, titre: 'Dev Backend', priorite: '1', projet: 1, dateDebut: day(-4), dateEcheance: day(2), progression: 60, statut: 'inprogress', type: 'tache', categorie: 'architeure', dependDe: ['L', 1], assignees: ['L', 1, 2], estimationH: 32, tempsPasse: 12 },
                 { id: 3, titre: 'Design UI', priorite: '2', projet: 2, dateDebut: day(-5), dateEcheance: day(1), progression: 80, statut: 'review', type: 'tache', assignees: ['L', 3] },
-                { id: 4, titre: 'Livraison MVP', priorite: '1', projet: 1, dateDebut: day(15), dateEcheance: day(15), progression: 0, statut: 'todo', type: 'jalon', dependDe: ['L', 2], assignees: ['L', 1] },
+                { id: 4, titre: 'Livraison MVP', priorite: '1', projet: 1, dateDebut: day(15), dateEcheance: day(15), progression: 0, statut: 'todo', type: 'jalon', categorie: 'fonctionnel', dependDe: ['L', 2], assignees: ['L', 1] },
                 { id: 5, titre: 'Tests QA', priorite: '3', projet: 2, dateDebut: day(5), dateEcheance: day(12), progression: 0, statut: 'todo', type: 'tache', assignees: ['L', 2], tags: ['L', 'qa', 'tests'] },
                 { id: 6, titre: 'Documentation', priorite: '4', projet: 3, dateDebut: day(-2), dateEcheance: day(-1), progression: 20, statut: 'inprogress', type: 'tache', assignees: ['L', 3] },
                 { id: 7, titre: 'Correction bugs', priorite: '2', projet: 1, dateDebut: day(0), dateEcheance: day(3), progression: 10, statut: 'inprogress', type: 'tache', assignees: ['L', 2] },
                 { id: 8, titre: 'Réunion client', priorite: '2', projet: 2, dateDebut: day(7), dateEcheance: day(7), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 1, 3] },
                 { id: 9, titre: 'Migration DB', priorite: '1', projet: 3, dateDebut: day(-3), dateEcheance: day(0), progression: 90, statut: 'review', type: 'tache', assignees: ['L', 1] },
-                { id: 10, titre: 'Formation équipe', priorite: '3', projet: 1, dateDebut: day(10), dateEcheance: day(14), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 2, 3] }
+                { id: 10, titre: 'Formation équipe', priorite: '3', projet: 1, dateDebut: day(10), dateEcheance: day(14), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 2, 3], dds: 'XXX0001' }
             ];
-
-            sortTasks();
+            
             updateFilterMenus();
             render();
         }
