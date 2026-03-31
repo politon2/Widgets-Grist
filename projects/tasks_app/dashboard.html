@@ -831,7 +831,6 @@ function renderWorkload(comp, ft) {
     return `<div class="workload-list">${sortedRoles.map(role => {
         const roleMembers = byRole[role];
         return `<div class="workload-group">
-            <div class="workload-group-header">${escapeHtml(role)}</div>
             ${roleMembers.map(m => {
                 const d=byAssignee[m.id]||{total:0,active:0};
                 const pct=Math.round(d.active/maxActive*100);
