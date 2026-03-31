@@ -881,9 +881,9 @@ function renderProjects(comp, ft) {
     };
 
     const getMoaName = id => {
-        if (!moa || !Array.isArray(moa)) return 'toto';
+        if (!moa || !Array.isArray(moa)) return '';
         const m = moa.find(x => String(x.id) === String(id));
-        return m ? m.nom : 'titi';
+        return m ? m.nom : String(id) + String(x.id);
     };
 
     const getMoaColor = id => {
