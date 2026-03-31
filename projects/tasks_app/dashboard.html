@@ -879,6 +879,18 @@ function renderProjects(comp, ft) {
         return member ? (member.couleur || '#64748b') : '#64748b';
     };
 
+    const getMoaName = id => {
+        if (!moa || !Array.isArray(moa)) return '';
+        const m = moa.find(x => String(x.id) === String(id));
+        return m ? m.nom : '';
+    };
+
+    const getMoaColor = id => {
+        if (!moa || !Array.isArray(moa)) return '#64748b';
+        const m = moa.find(x => String(x.id) === String(id));
+        return m ? (m.couleur || '#64748b') : '#64748b';
+    };
+
     const getDivisionName = divId => {
         if (!divisions || !Array.isArray(divisions)) return '';
         const div = divisions.find(d => String(d.id) === String(divId));
@@ -928,8 +940,8 @@ function renderProjects(comp, ft) {
         const techniques = getAssigneesByCategory(projectTasks, 'Technique');
 
         const responsableName = getMemberName(p.responsable);
-        const moaName = getMemberName(p.moa);
-        const moaColor = getMemberColor(p.moa);
+        const moaName = getMoaName(p.moa);
+        const moaColor = getMoaColor(p.moa);
         const divisionName = getDivisionName(p.division);
         const divisionColor = getDivisionColor(p.division);
         const responsableColor = getMemberColor(p.responsable);
