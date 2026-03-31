@@ -378,7 +378,7 @@ let gristReady = false;
 let isEditMode = false;
 let selectedCompId = null;
 let dashConfig = { layout: DEFAULT_LAYOUT.map(c => ({...c, config:{...c.config}})) };
-let filters = { periode: 'all', projets: [], assignes: [], statuts: [] };
+let filters = { periode: 'all', projets: [], responsables: [], assignes: [], statuts: [] };
 let filterPanelOpen = false;
 
 const STATUS_LABELS  = { todo:'À faire', inprogress:'En cours', review:'En revue', done:'Terminé' };
@@ -430,6 +430,10 @@ function getFilteredTasks(compFilter) {
         ft = ft.filter(t => { const d=gristToDate(t.dateEcheance); return d && d >= pStart; });
     }
     if (filters.projets.length)  ft = ft.filter(t => filters.projets.includes(String(t.projet)));
+    if (filters.responsables.length) ft = ft.filter(t => {
+        const project = projects.find(p => String(p.id) === String(t.projet));
+        return project && filters.responsables.includes(String(project.responsable));
+    });
     if (filters.assignes.length) ft = ft.filter(t => getAssigneesArray(t).some(a => filters.assignes.includes(String(a))));
     if (filters.statuts.length)  ft = ft.filter(t => filters.statuts.includes(getStatus(t)));
     if (compFilter && compFilter.field && compFilter.value) {
@@ -446,14 +450,15 @@ function getFilteredTasks(compFilter) {
 }
 
 function hasActiveFilters() {
-    return filters.periode!=='all' || filters.projets.length || filters.assignes.length || filters.statuts.length;
+    return filters.periode!=='all' || filters.projets.length || filters.responsables.length || filters.assignes.length || filters.statuts.length;
 }
 
 function toggleFilterProjet(id) { const s=String(id); filters.projets=filters.projets.includes(s)?filters.projets.filter(x=>x!==s):[...filters.projets,s]; render(); }
+function toggleFilterResponsable(id) { const s=String(id); filters.responsables=filters.responsables.includes(s)?filters.responsables.filter(x=>x!==s):[...filters.responsables,s]; render(); }
 function toggleFilterAssigne(id) { const s=String(id); filters.assignes=filters.assignes.includes(s)?filters.assignes.filter(x=>x!==s):[...filters.assignes,s]; render(); }
 function toggleFilterStatut(v)  { filters.statuts=filters.statuts.includes(v)?filters.statuts.filter(x=>x!==v):[...filters.statuts,v]; render(); }
 function setPeriode(p)           { filters.periode=p; render(); }
-function clearFilters()          { filters={periode:'all',projets:[],assignes:[],statuts:[]}; render(); }
+function clearFilters()          { filters={periode:'all',projets:[],responsables:[],assignes:[],statuts:[]}; render(); }
 
 function toggleFilterPanel() {
     filterPanelOpen = !filterPanelOpen;
@@ -476,6 +481,18 @@ function renderFilterPanel() {
             <div class="filter-section-label">Projet</div>
             <div class="filter-checkboxes">
                 ${projects.filter(p=>p.actif!==false).map(p => `<span class="filter-check ${filters.projets.includes(String(p.id))?'active':''}" onclick="toggleFilterProjet(${p.id})"><span style="color:${p.couleur||'#6366f1'}">●</span> ${escapeHtml(p.nom)}</span>`).join('')}
+            </div>
+        </div>`;
+    // Filtre par responsable de projet
+    const responsables = [...new Set(projects.filter(p=>p.actif!==false && p.responsable).map(p=>p.responsable))];
+    if (responsables.length) html += `
+        <div class="filter-section">
+            <div class="filter-section-label">Responsable</div>
+            <div class="filter-checkboxes">
+                ${responsables.map(id => {
+                    const m = team.find(t=>String(t.id)===String(id));
+                    return m ? `<span class="filter-check ${filters.responsables.includes(String(id))?'active':''}" onclick="toggleFilterResponsable(${id})">${escapeHtml(m.nom)}</span>` : '';
+                }).filter(Boolean).join('')}
             </div>
         </div>`;
     if (team.length) html += `
@@ -505,6 +522,10 @@ function renderFilterChips() {
     filters.projets.forEach(id => {
         const p = projects.find(x=>String(x.id)===id);
         if (p) html += `<span class="filter-chip">${escapeHtml(p.nom)}<button onclick="toggleFilterProjet(${p.id})">×</button></span>`;
+    });
+    filters.responsables.forEach(id => {
+        const m = team.find(x=>String(x.id)===id);
+        if (m) html += `<span class="filter-chip">${escapeHtml((m.nom||'').split(' ')[0])}<button onclick="toggleFilterResponsable(${m.id})">×</button></span>`;
     });
     filters.assignes.forEach(id => {
         const m = team.find(x=>String(x.id)===id);
