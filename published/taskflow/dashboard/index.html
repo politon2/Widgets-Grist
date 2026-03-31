@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -361,10 +362,10 @@ const DEFAULT_LAYOUT = [
     { id:'c4', type:'kpi',      colSpan:1, title:'En retard',  config:{ metric:'late' } },
     { id:'c5', type:'donut',    colSpan:2, title:'Par statut', config:{ groupBy:'statut' } },
     { id:'c6', type:'bars',     colSpan:2, title:'Par priorité', config:{ groupBy:'priorite' } },
-    { id:'c7', type:'workload', colSpan:2, title:'Charge équipe', config:{} },
-    { id:'c8', type:'projects', colSpan:2, title:'Projets',    config:{} },
+    { id:'c7', type:'projects', colSpan:2, title:'Projets',    config:{} },
+    { id:'c8', type:'workload', colSpan:2, title:'Charge équipe', config:{ horizon:8 } },
     { id:'c9', type:'upcoming', colSpan:2, title:'Échéances',  config:{ horizon:14 } },
- 
+    
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -891,10 +892,10 @@ function renderProjects(comp, ft) {
         return m ? (m.couleur || '#64748b') : '#64748b';
     };
 
-    const getDivisionName = id => {
+    const getDivisionName = divId => {
         if (!divisions || !Array.isArray(divisions)) return '';
-        const division = divisions.find(d => String(d.id) === String(id));
-        return division ? division.nom : '';
+        const div = divisions.find(d => String(d.id) === String(divId));
+        return div ? div.nom : '';
     };
 
     const getDivisionColor = divId => {
@@ -921,13 +922,13 @@ function renderProjects(comp, ft) {
 
     const renderAssigneeGroup = (label, ids) => {
         if (!ids.length) return '';
-        return `<span class="project-badge"><strong>${label}</strong>${ids.map(id => {
+        return `<span class="project-badge"><strong>${label}:</strong>${ids.map(id => {
             const name = getMemberName(id);
             const initials = toInitials(name);
             return `<span class="project-badge-avatar" style="background:${getMemberColor(id)}" title="${escapeHtml(name)}">${escapeHtml(initials)}</span>`;
         }).join('')}</span>`;
     };
-    
+
     return `<div class="projects-list">${active.filter(p => stats[p.id]).map(p => {
         const s = stats[p.id] || { total:0, done:0 };
         const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
@@ -944,16 +945,20 @@ function renderProjects(comp, ft) {
         const moaColor = getMoaColor(p.moa);
         const divisionName = getDivisionName(p.division);
         const divisionColor = getDivisionColor(p.division);
+        const responsableColor = getMemberColor(p.responsable);
+        const responsableInitials = toInitials(responsableName || '');
+        //const moaInitials = toInitials(moaName || '');
 
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
             <div class="project-info">
                 <div class="project-name">${escapeHtml(p.nom)}</div>
+                <div class="project-stats">${s.done}/${s.total} terminées</div>
                 <div class="project-meta">
-                    ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><span class="avatar" style="background:${responsableColor};width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-size:0.7rem;color:#fff">${escapeHtml(responsableInitials)}</span></span>` : '<span>—</span>'}
-                    <span>PRT : ${escapeHtml(p.prt || '—')}</span>
-                    ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>Division : —</span>'}
-                    ${moaName ? `<span style="background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px">${escapeHtml(moaName)}</span>` : '<span>MOA : —</span>'}
+                    ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
+                    <span>PRT: ${escapeHtml(p.prt || '—')}</span>
+                    ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
+                    ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}">${escapeHtml(moaName)}</span>` : '<span>—</span>'}
                 </div>
                 <div class="project-badges">
                     ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
@@ -962,7 +967,6 @@ function renderProjects(comp, ft) {
                     ${renderAssigneeGroup('MOE', moe)}
                     ${renderAssigneeGroup('Techniques', techniques)}
                 </div>
-                <div class="project-stats">${s.done}/${s.total} terminées</div>
             </div>
             <div class="project-progress">
                 <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
@@ -971,7 +975,6 @@ function renderProjects(comp, ft) {
         </div>`;
     }).join('')}</div>`;
 }
-
 
 function renderList(comp, ft) {
     const preset = comp.config.preset||'all';
@@ -1036,7 +1039,7 @@ function render() {
     renderGrid();
     renderFilterChips();
     if (filterPanelOpen) renderFilterPanel();
-    document.getElementById('lastUpdate').textContent = 'Mise à jour: ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('lastUpdate').textContent = 'Mis à jour: ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1146,44 +1149,35 @@ async function init() {
 }
 
 function useDemoMode() {
-    document.body.insertAdjacentHTML('beforeend', '<div class="demo-badge">Démo</div>');
-        divisions = [
-            { id: 1, nom: 'D1', libelle: 'Division 1', couleur: '#4f46e5'},
-            { id: 2, nom: 'D2', libelle: 'Division 2', couleur: '#4f46e5'}
-        ];
-        moa = [
-            { id: 1, nom: 'DTEST1', responable: 'Sophie FONSEC', couleur: '#4f46e5'},
-            { id: 2, nom: 'DTEST2', responable: 'Jean DUPONT', couleur: '#10b981'}
-        ];
-        team = [
-            { id: 1, nom: 'Alice Martin', actif: true, couleur: '#4f46e5' },
-            { id: 2, nom: 'Bob Durant', actif: true, couleur: '#10b981' },
-            { id: 3, nom: 'Claire Bernard', actif: true, couleur: '#f59e0b' }
-        ];
-        projects = [
-            { id: 1, nom: 'Refonte Portail', couleur: '#4f46e5', actif: true, division: 1 },
-            { id: 2, nom: 'App Mobile', couleur: '#10b981', actif: true, division: 1 },
-            { id: 3, nom: 'API v2', couleur: '#f59e0b', actif: true, division: 2 }
-        ];
-        const today = new Date();
-        const day = (d) => dateToGrist(new Date(today.getFullYear(), today.getMonth(), today.getDate() + d));
-        tasks = [
-            { id: 1, titre: 'Analyse besoins', priorite: '1', projet: 1, dateDebut: day(-10), dateEcheance: day(-5), progression: 100, statut: 'done', type: 'tache', categorie: 'architeure', assignees: ['L', 1], tags: ['L', 'documentation'] },
-            { id: 2, titre: 'Dev Backend', priorite: '1', projet: 1, dateDebut: day(-4), dateEcheance: day(2), progression: 60, statut: 'inprogress', type: 'tache', categorie: 'architeure', dependDe: ['L', 1], assignees: ['L', 1, 2], estimationH: 32, tempsPasse: 12 },
-            { id: 3, titre: 'Design UI', priorite: '2', projet: 2, dateDebut: day(-5), dateEcheance: day(1), progression: 80, statut: 'review', type: 'tache', assignees: ['L', 3] },
-            { id: 4, titre: 'Livraison MVP', priorite: '1', projet: 1, dateDebut: day(15), dateEcheance: day(15), progression: 0, statut: 'todo', type: 'jalon', categorie: 'fonctionnel', dependDe: ['L', 2], assignees: ['L', 1] },
-            { id: 5, titre: 'Tests QA', priorite: '3', projet: 2, dateDebut: day(5), dateEcheance: day(12), progression: 0, statut: 'todo', type: 'tache', assignees: ['L', 2], tags: ['L', 'qa', 'tests'] },
-            { id: 6, titre: 'Documentation', priorite: '4', projet: 3, dateDebut: day(-2), dateEcheance: day(-1), progression: 20, statut: 'inprogress', type: 'tache', assignees: ['L', 3] },
-            { id: 7, titre: 'Correction bugs', priorite: '2', projet: 1, dateDebut: day(0), dateEcheance: day(3), progression: 10, statut: 'inprogress', type: 'tache', assignees: ['L', 2] },
-            { id: 8, titre: 'Réunion client', priorite: '2', projet: 2, dateDebut: day(7), dateEcheance: day(7), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 1, 3] },
-            { id: 9, titre: 'Migration DB', priorite: '1', projet: 3, dateDebut: day(-3), dateEcheance: day(0), progression: 90, statut: 'review', type: 'tache', assignees: ['L', 1] },
-            { id: 10, titre: 'Formation équipe', priorite: '3', projet: 1, dateDebut: day(10), dateEcheance: day(14), progression: 0, statut: 'todo', type: 'reunion', assignees: ['L', 2, 3], dds: 'XXX0001' }
-        ];
-        
-        updateFilterMenus();
-        render();
-    }
-
+    document.body.insertAdjacentHTML('beforeend','<div class="demo-badge">Démo</div>');
+    team = [
+        { id:1, nom:'Alice Martin',   actif:true, couleur:'#4f46e5' },
+        { id:2, nom:'Bob Durant',     actif:true, couleur:'#10b981' },
+        { id:3, nom:'Claire Bernard', actif:true, couleur:'#f59e0b' },
+    ];
+    projects = [
+        { id:1, nom:'Refonte Portail', couleur:'#4f46e5', actif:true },
+        { id:2, nom:'App Mobile',      couleur:'#10b981', actif:true },
+        { id:3, nom:'API v2',          couleur:'#f59e0b', actif:true },
+    ];
+    const today=new Date();
+    const day=d=>Math.floor(new Date(today.getFullYear(),today.getMonth(),today.getDate()+d).getTime()/1000);
+    tasks = [
+        {id:1,titre:'Analyse besoins',  priorite:'1',projet:1,dateDebut:day(-10),dateEcheance:day(-5), progression:100,statut:'done',      type:'tache',   assignees:['L',1]},
+        {id:2,titre:'Dev Backend',      priorite:'1',projet:1,dateDebut:day(-4), dateEcheance:day(2),  progression:60, statut:'inprogress',type:'tache',   assignees:['L',1,2]},
+        {id:3,titre:'Design UI',        priorite:'2',projet:2,dateDebut:day(-5), dateEcheance:day(1),  progression:80, statut:'review',    type:'tache',   assignees:['L',3]},
+        {id:4,titre:'Livraison MVP',    priorite:'1',projet:1,dateDebut:day(15), dateEcheance:day(15), progression:0,  statut:'todo',      type:'jalon',   assignees:['L',1]},
+        {id:5,titre:'Tests QA',         priorite:'3',projet:2,dateDebut:day(5),  dateEcheance:day(12), progression:0,  statut:'todo',      type:'tache',   assignees:['L',2]},
+        {id:6,titre:'Documentation',    priorite:'4',projet:3,dateDebut:day(-2), dateEcheance:day(-1), progression:20, statut:'inprogress',type:'tache',   assignees:['L',3]},
+        {id:7,titre:'Correction bugs',  priorite:'2',projet:1,dateDebut:day(0),  dateEcheance:day(3),  progression:10, statut:'inprogress',type:'tache',   assignees:['L',2]},
+        {id:8,titre:'Réunion client',   priorite:'2',projet:2,dateDebut:day(7),  dateEcheance:day(7),  progression:0,  statut:'todo',      type:'reunion', assignees:['L',1,3]},
+        {id:9,titre:'Migration DB',     priorite:'1',projet:3,dateDebut:day(-3), dateEcheance:day(0),  progression:90, statut:'review',    type:'tache',   assignees:['L',1]},
+        {id:10,titre:'Formation équipe',priorite:'3',projet:1,dateDebut:day(10), dateEcheance:day(14), progression:0,  statut:'todo',      type:'reunion', assignees:['L',2,3]},
+        {id:11,titre:'Démo v1',         priorite:'2',projet:2,dateDebut:day(-14),dateEcheance:day(-7), progression:100,statut:'done',      type:'reunion', assignees:['L',1,2,3]},
+        {id:12,titre:'Perf frontend',   priorite:'3',projet:2,dateDebut:day(-7), dateEcheance:day(-3), progression:100,statut:'done',      type:'tache',   assignees:['L',3]},
+    ];
+    render();
+}
 
 init();
 </script>
