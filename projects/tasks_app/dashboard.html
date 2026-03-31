@@ -929,11 +929,11 @@ function renderProjects(comp, ft) {
 
         const responsableName = getMemberName(p.responsable);
         const moaName = getMemberName(p.moa);
+        const moaColor = getMemberColor(p.moa);
         const divisionName = getDivisionName(p.division);
         const divisionColor = getDivisionColor(p.division);
         const responsableColor = getMemberColor(p.responsable);
         const responsableInitials = toInitials(responsableName || '');
-        const moaColor = getMemberColor(p.moa);
         const moaInitials = toInitials(moaName || '');
 
         return `<div class="project-item">

@@ -928,6 +928,8 @@ function renderProjects(comp, ft) {
         const techniques = getAssigneesByCategory(projectTasks, 'Technique');
 
         const responsableName = getMemberName(p.responsable);
+        const moaName = getMemberName(p.moa);
+        const moaColor = getMemberColor(p.moa);
         const divisionName = getDivisionName(p.division);
         const divisionColor = getDivisionColor(p.division);
 
@@ -939,6 +941,7 @@ function renderProjects(comp, ft) {
                     <span>Resp : ${escapeHtml(responsableName || '—')}</span>
                     <span>PRT : ${escapeHtml(p.prt || '—')}</span>
                     ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>Division : —</span>'}
+                    ${moaName ? `<span style="background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px">${escapeHtml(moaName)}</span>` : '<span>MOA : —</span>'}
                 </div>
                 <div class="project-badges">
                     ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
