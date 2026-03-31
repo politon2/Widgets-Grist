@@ -128,6 +128,9 @@
 
         /* ── Workload ── */
         .workload-list { display: flex; flex-direction: column; gap: 9px; }
+        .workload-group { margin-bottom: 16px; }
+        .workload-group:last-child { margin-bottom: 0; }
+        .workload-group-header { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 8px; padding-left: 4px; border-left: 3px solid var(--primary); }
         .workload-item { display: flex; align-items: center; gap: 9px; }
         .workload-avatar { width: 28px; height: 28px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.73rem; flex-shrink: 0; }
         .workload-info { flex: 1; min-width: 0; }
@@ -811,15 +814,36 @@ function renderWorkload(comp, ft) {
     const maxActive = Math.max(...team.map(m=>(byAssignee[m.id]||{}).active||0), 1);
     const members = team.filter(m=>m.actif!==false);
     if (!members.length) return '<div class="empty-state"><div class="empty-text">Aucun membre actif</div></div>';
-    return `<div class="workload-list">${members.map(m => {
-        const d=byAssignee[m.id]||{total:0,active:0};
-        const pct=Math.round(d.active/maxActive*100);
-        const lvl=d.active>5?'high':d.active>3?'medium':'';
-        const ini=(m.nom||'?').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-        return `<div class="workload-item">
-            <div class="workload-avatar" style="background:${m.couleur||'#4f46e5'}">${ini}</div>
-            <div class="workload-info"><div class="workload-name">${escapeHtml(m.nom)}</div><div class="workload-tasks">${d.active} active${d.active>1?'s':''} / ${d.total} total</div></div>
-            <div class="workload-bar"><div class="workload-bar-fill ${lvl}" style="width:${pct}%"></div></div>
+
+    // Grouper par rôle avec ordre spécifique
+    const roleOrder = ['Manager', 'Chef de projet', 'Fonctionnel', 'Technique'];
+    const byRole = {};
+    members.forEach(m => {
+        const role = m.role || m.categorie || 'Technique'; // fallback à Technique si pas défini
+        if (!byRole[role]) byRole[role] = [];
+        byRole[role].push(m);
+    });
+
+    // Trier les rôles selon l'ordre demandé
+    const sortedRoles = roleOrder.filter(role => byRole[role]).concat(
+        Object.keys(byRole).filter(role => !roleOrder.includes(role)).sort()
+    );
+
+    return `<div class="workload-list">${sortedRoles.map(role => {
+        const roleMembers = byRole[role];
+        return `<div class="workload-group">
+            <div class="workload-group-header">${escapeHtml(role)}</div>
+            ${roleMembers.map(m => {
+                const d=byAssignee[m.id]||{total:0,active:0};
+                const pct=Math.round(d.active/maxActive*100);
+                const lvl=d.active>5?'high':d.active>3?'medium':'';
+                const ini=(m.nom||'?').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+                return `<div class="workload-item">
+                    <div class="workload-avatar" style="background:${m.couleur||'#4f46e5'}">${ini}</div>
+                    <div class="workload-info"><div class="workload-name">${escapeHtml(m.nom)}</div><div class="workload-tasks">${d.active} active${d.active>1?'s':''} / ${d.total} total</div></div>
+                    <div class="workload-bar"><div class="workload-bar-fill ${lvl}" style="width:${pct}%"></div></div>
+                </div>`;
+            }).join('')}
         </div>`;
     }).join('')}</div>`;
 }
