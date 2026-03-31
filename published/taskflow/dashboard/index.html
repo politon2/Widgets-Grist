@@ -853,8 +853,8 @@ function renderUpcoming(comp, ft) {
 }
 
 function renderProjects(comp, ft) {
-        const active = projects.filter(p => p.actif !== false);
-    if (!active.length) return '<div class="empty-state"><div class="empty-icon">?</div><div class="empty-text">Aucun projet actif</div></div>';
+    const active = projects.filter(p => p.actif !== false);
+    if (!active.length) return '<div class="empty-state"><div class="empty-icon">◧</div><div class="empty-text">Aucun projet actif</div></div>';
 
     const stats = {};
     const byProjTasks = {};
@@ -879,12 +879,14 @@ function renderProjects(comp, ft) {
         return member ? (member.couleur || '#64748b') : '#64748b';
     };
 
-    const getDivisionName = divId => {
-        const div = divisions.find(d => String(d.id) === String(divId));
-        return div ? div.nom : '';
+    const getDivisionName = id => {
+        if (!divisions || !Array.isArray(divisions)) return '';
+        const division = divisions.find(d => String(d.id) === String(id));
+        return division ? division.nom : '';
     };
 
     const getDivisionColor = divId => {
+        if (!divisions || !Array.isArray(divisions)) return '#64748b';
         const div = divisions.find(d => String(d.id) === String(divId));
         return div ? (div.couleur || '#64748b') : '#64748b';
     };
@@ -913,25 +915,20 @@ function renderProjects(comp, ft) {
             return `<span class="project-badge-avatar" style="background:${getMemberColor(id)}" title="${escapeHtml(name)}">${escapeHtml(initials)}</span>`;
         }).join('')}</span>`;
     };
-
+    
     return `<div class="projects-list">${active.filter(p => stats[p.id]).map(p => {
         const s = stats[p.id] || { total:0, done:0 };
         const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
         const projectTasks = byProjTasks[p.id] || [];
 
-        const fonctionnels = getAssigneesByCategory(projectTasks, 'Fonctionnel');
-        const architectes = getAssigneesByCategory(projectTasks, 'Architecture');
-        const moa = getAssigneesByCategory(projectTasks, 'Budget');
-        const moe = getAssigneesByCategory(projectTasks, 'Transfert');
-        const techniques = getAssigneesByCategory(projectTasks, 'Technique');
-
         const responsableName = getMemberName(p.responsable);
-        //const moaName = getMemberName(p.moa);
-        //const divisionName = getDivisionName(p.division);
-        //const divisionColor = getDivisionColor(p.division);
-        const responsableColor = getMemberColor(p.responsable);
-        const responsableInitials = toInitials(responsableName || '');
-
+        //2const moaName = getMemberName(p.moa);
+        const divisionName = getDivisionName(p.division);
+        //4const divisionColor = getDivisionColor(p.division);
+        //3const responsableColor = getMemberColor(p.responsable);
+        //3const responsableInitials = toInitials(responsableName || '');
+        //const moaColor = getMemberColor(p.moa);
+        //const moaInitials = toInitials(moaName || '');
 
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
@@ -1079,8 +1076,8 @@ async function loadAllData() {
             grist.docApi.fetchTable('Tasks'),
             grist.docApi.fetchTable('Projects'),
             grist.docApi.fetchTable('Team'),
-            grist.docApi.fetchTable('Divisions'),
-            grist.docApi.fetchTable('Moa'),
+            grist.docApi.fetchTable('Divisions').catch(()=>({})),
+            grist.docApi.fetchTable('Moa').catch(()=>({})),
         ]);
         tasks=convert(td); projects=convert(pd); team=convert(md); divisions=convert(dd); moa=convert(mm);
         render();
