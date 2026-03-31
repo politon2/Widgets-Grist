@@ -1497,13 +1497,22 @@
         // ═══════════════════════════════════════════════════════════════════════
         // PANEL
         // ═══════════════════════════════════════════════════════════════════════
-        function openPanel() {
-            panelState.open = true;
-            document.getElementById('panel').classList.add('open');
-            document.getElementById('gridContainer').classList.add('panel-open');
+        function openPanel() { 
+            panelState.open = true; 
+            document.getElementById('panel').classList.add('open'); 
+            document.getElementById('kanbanContainer').classList.add('panel-open'); 
             document.getElementById('panelOverlay').classList.add('visible');
         }
-
+        function closePanel() { 
+            panelState.open = false; 
+            document.getElementById('panel').classList.remove('open'); 
+            document.getElementById('kanbanContainer').classList.remove('panel-open'); 
+            document.getElementById('panelOverlay').classList.remove('visible');
+            panelState = { open: false, isNew: false, taskId: null, taskIndex: -1, columnTasks: [], columnKey: null, editData: null }; 
+            selectedTaskId = null; 
+            render(); 
+        }
+        // BUG-04 FIX: Confirmation avant fermeture si nouvelle tâche non sauvegardée
         function confirmClosePanel() {
             if (panelState.isNew && panelState.editData?.titre?.trim()) {
                 if (confirm('Fermer sans créer la tâche ?')) closePanel();
@@ -1512,47 +1521,24 @@
             }
         }
 
-        function closePanel() {
-            panelState.open = false;
-            document.getElementById('panel').classList.remove('open');
-            document.getElementById('gridContainer').classList.remove('panel-open');
-            document.getElementById('panelOverlay').classList.remove('visible');
-            panelState = { open: false, mode: null, periodType: null, periodDate: null, periodTasks: [], taskId: null, taskIndex: -1, isNew: false, editData: null };
-            render();
-        }
-        
-        function openDayPanel(date) {
-            selectedDate = date;
-            const ft = getFilteredTasks().filter(t => {
-                const s = gristToDate(t.dateDebut), e = gristToDate(t.dateEcheance) || s;
-                return s && startOfDay(s) <= date && endOfDay(e || s) >= date;
-            });
-            panelState = { open: true, mode: 'period', periodType: 'day', periodDate: date, periodTasks: ft, taskId: null, taskIndex: -1, isNew: false, editData: null };
-            renderPanelPeriod();
-            openPanel();
-            render();
-        }
-        
-        function openWeekPanel(date) {
-            const weekStart = getWeekStart(date);
-            const weekEnd = addDays(weekStart, 6);
-            const ft = getFilteredTasks().filter(t => {
-                const s = gristToDate(t.dateDebut), e = gristToDate(t.dateEcheance) || s;
-                return s && startOfDay(s) <= weekEnd && endOfDay(e || s) >= weekStart;
-            });
-            panelState = { open: true, mode: 'period', periodType: 'week', periodDate: weekStart, periodTasks: ft, taskId: null, taskIndex: -1, isNew: false, editData: null };
-            renderPanelPeriod();
-            openPanel();
-        }
-        
         function openTaskPanel(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
             selectedTaskId = taskId;
-            const idx = panelState.periodTasks.findIndex(t => t.id === taskId);
-            panelState.mode = 'task';
+            
+            // Find column tasks for navigation
+            const ft = getFilteredTasks();
+            const columns = buildColumns(ft);
+            let colKey = null, colTasks = [];
+            for (const col of columns) {
+                const idx = col.tasks.findIndex(t => t.id === taskId);
+                if (idx !== -1) { colKey = col.key; colTasks = col.tasks; break; }
+            }
+            
             panelState.taskId = taskId;
-            panelState.taskIndex = idx >= 0 ? idx : 0;
+            panelState.taskIndex = colTasks.findIndex(t => t.id === taskId);
+            panelState.columnTasks = colTasks;
+            panelState.columnKey = colKey;
             panelState.isNew = false;
             panelState.editData = cloneTaskData(task);
             renderPanelTask();
@@ -1560,19 +1546,38 @@
             if (gristReady) grist.setSelectedRows([taskId]);
             render();
         }
+
+        function openCreatePanel() { openCreatePanelForColumn(groupBy === 'statut' ? 'todo' : groupBy === 'priorite' ? '3' : projects.length ? String(projects[0].id) : 'none'); }
         
-        function openCreatePanel(date = null) {
+        function openCreatePanelWithCategory(categorie) {
+            const categoryPresets = {
+                architecture: { priorite: '3', type: 'tache', titre: 'Architecture', description: 'Tâche d\'architecture', subtasks: [{ id: Date.now(), text: 'Créer DDS', done: false }, { id: Date.now() + 1, text: 'Kickoff', done: false }, { id: Date.now() + 2, text: 'DAv0', done: false }, { id: 1774856563420, text: 'DAv1', done: false }] },
+                fonctionnel: { priorite: '3', type: 'tache', titre: 'Fonctionnel', description: 'Tâche fonctionnelle', subtasks: [{ id: Date.now(), text: 'Expression de Besoins', done: false }, { id: Date.now() + 1, text: 'Présentation MOA', done: false }, { id: Date.now() + 2, text: 'CdC v0', done: false }, { id: Date.now() + 3, text: 'CdC v1 ou SFG', done: false }] },
+                budget: { priorite: '3', type: 'tache', titre: 'Budget', description: 'Tâche budgétaire', subtasks: [{ id: Date.now(), text: 'Budget Roadmap', done: false }, { id: Date.now() + 1, text: 'PRT Palier', done: false }, { id: Date.now() + 2, text: 'Budget projet validé', done: false }] },
+                transfert: { priorite: '3', type: 'tache', titre: 'Transfert', description: 'Tâche de transfert', subtasks: [{ id: Date.now(), text: 'Support de transfert', done: false }, { id: Date.now() + 1, text: 'Nomination équipe projet', done: false }, { id: Date.now() + 2, text: 'Présentation MOE', done: false }, { id: Date.now() + 3, text: 'Demande d\'EPC', done: false }, { id: Date.now() + 4, text: 'Présentation TMA', done: false }] },
+                technique: { priorite: '3', type: 'tache', titre: 'Technique', description: 'Tâche technique', subtasks: [{ id: Date.now(), text: 'Créer DDS Sécurité', done: false }, { id: Date.now() + 1, text: 'Réunion ENF', done: false }, { id: Date.now() + 2, text: 'Revue technique', done: false }] }
+            };
+            const preset = categoryPresets[categorie] || {};
+            openCreatePanelForColumnWithPreset(preset, categorie);
+            toggleFilterMenu('create'); // Fermer le menu après sélection
+        }
+        
+        function openCreatePanelForColumnWithPreset(preset, categorie) {
+            const colKey = groupBy === 'statut' ? 'todo' : groupBy === 'priorite' ? '3' : projects.length ? String(projects[0].id) : 'none';
+            openCreatePanelForColumn(colKey, preset, categorie);
+        }
+
+        function openCreatePanelForColumn(colKey, extraPreset = {}, categorie = null) {
             const today = new Date();
-            const targetDate = date || selectedDate || today;
+            let preset = { ...extraPreset };
+            if (groupBy === 'statut') preset.statut = colKey;
+            else if (groupBy === 'priorite') preset.priorite = colKey;
+            else if (groupBy === 'projet') preset.projet = colKey === 'none' ? null : parseInt(colKey);
+            else if (groupBy === 'division') preset.projet = null; // L'utilisateur choisira le projet dans le panel
+            
             panelState = {
-                open: true, mode: 'task', periodType: panelState.periodType, periodDate: panelState.periodDate,
-                periodTasks: panelState.periodTasks, taskId: null, taskIndex: -1, isNew: true,
-                editData: {
-                    titre: '', description: '', type: 'tache', priorite: '3', statut: 'todo', progression: 0,
-                    dateDebut: dateToGrist(targetDate), dateEcheance: dateToGrist(addDays(targetDate, 7)),
-                    projet: projects.length > 0 ? projects[0].id : null,
-                    assignees: [], dependDe: [], tags: [], estimationH: null, tempsPasse: null, subtasks: []
-                }
+                open: true, isNew: true, taskId: null, taskIndex: -1, columnTasks: [], columnKey: colKey,
+                editData: { titre: preset.titre || '', description: preset.description || '', type: preset.type || 'tache', priorite: preset.priorite || '3', statut: preset.statut || 'todo', progression: 0, dateDebut: dateToGrist(today), dateEcheance: dateToGrist(addDays(today, 7)), projet: preset.projet !== undefined ? preset.projet : (projects.length > 0 ? projects[0].id : null), assignees: [], dependDe: [], tags: [], estimationH: preset.estimationH || null, tempsPasse: null, subtasks: normalizeSubtasks(preset.subtasks), categorie: categorie }
             };
             renderPanelTask();
             openPanel();
@@ -1580,25 +1585,7 @@
             setTimeout(() => document.getElementById('taskTitle')?.focus(), 100);
         }
 
-        function cloneTaskData(task) {
-            return {
-                titre: task.titre || '',
-                description: task.description || '',
-                type: task.type || 'tache',
-                priorite: String(task.priorite || '3'),
-                statut: task.statut || 'todo',
-                progression: task.progression || 0,
-                dateDebut: task.dateDebut,
-                dateEcheance: task.dateEcheance,
-                projet: task.projet || null,
-                assignees: getAssignees(task),
-                dependDe: getDependsOn(task),
-                tags: getTags(task),
-                estimationH: task.estimationH || null,
-                tempsPasse: task.tempsPasse || null,
-                subtasks: getSubtasks(task)
-            };
-        }
+        function cloneTaskData(task) { return { titre: task.titre || '', description: task.description || '', type: task.type || 'tache', priorite: String(task.priorite || '3'), statut: task.statut || 'todo', progression: task.progression || 0, dateDebut: task.dateDebut, dateEcheance: task.dateEcheance, projet: task.projet || null, assignees: getAssignees(task), dependDe: getDependsOn(task), tags: getTags(task), estimationH: task.estimationH || null, tempsPasse: task.tempsPasse || null, subtasks: getSubtasks(task), categorie: task.categorie || null, dds: task.dds || '' }; }
         
         // FIX: Synchroniser editData vers le task local dans tasks[]
         function syncLocalTask() {
@@ -1621,8 +1608,19 @@
             task.estimationH = data.estimationH;
             task.tempsPasse = data.tempsPasse;
             task.subtasks = subtasksToJson(data.subtasks);
+            task.categorie = data.categorie;
+            task.dds = data.dds;
         }
-        
+
+        function navigatePanelTask(dir) {
+            if (panelState.isNew || panelState.columnTasks.length < 2) return;
+            let newIdx = panelState.taskIndex + dir;
+            if (newIdx < 0) newIdx = panelState.columnTasks.length - 1;
+            if (newIdx >= panelState.columnTasks.length) newIdx = 0;
+            const t = panelState.columnTasks[newIdx];
+            if (t) openTaskPanel(t.id);
+        }
+
         function backToPeriod() {
             if (panelState.periodType) {
                 panelState.mode = 'period';
@@ -1635,15 +1633,6 @@
             }
         }
         
-        function navigatePanelTask(dir) {
-            if (panelState.isNew || panelState.periodTasks.length < 2) return;
-            let newIdx = panelState.taskIndex + dir;
-            if (newIdx < 0) newIdx = panelState.periodTasks.length - 1;
-            if (newIdx >= panelState.periodTasks.length) newIdx = 0;
-            const t = panelState.periodTasks[newIdx];
-            if (t) openTaskPanel(t.id);
-        }
-
         // ═══════════════════════════════════════════════════════════════════════
         // PANEL PERIOD VIEW
         // ═══════════════════════════════════════════════════════════════════════
