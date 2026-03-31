@@ -1567,25 +1567,17 @@
                 technique: { priorite: '3', type: 'tache', titre: 'Technique', description: 'Tâche technique', subtasks: [{ id: Date.now(), text: 'Créer DDS Sécurité', done: false }, { id: Date.now() + 1, text: 'Réunion ENF', done: false }, { id: Date.now() + 2, text: 'Revue technique', done: false }] }
             };
             const preset = categoryPresets[categorie] || {};
-            openCreatePanelForColumnWithPreset(preset, categorie);
+            openCreatePanelWithPreset(preset, categorie);
             toggleFilterMenu('create'); // Fermer le menu après sélection
         }
         
-        function openCreatePanelForColumnWithPreset(preset, categorie) {
-            const colKey = groupBy === 'statut' ? 'todo' : groupBy === 'priorite' ? '3' : projects.length ? String(projects[0].id) : 'none';
-            openCreatePanelForColumn(colKey, preset, categorie);
-        }
 
-        function openCreatePanelForColumn(colKey, extraPreset = {}, categorie = null) {
+        function openCreatePanelWithPreset(extraPreset = {}, categorie = null) {
             const today = new Date();
             let preset = { ...extraPreset };
-            if (groupBy === 'statut') preset.statut = colKey;
-            else if (groupBy === 'priorite') preset.priorite = colKey;
-            else if (groupBy === 'projet') preset.projet = colKey === 'none' ? null : parseInt(colKey);
-            else if (groupBy === 'division') preset.projet = null; // L'utilisateur choisira le projet dans le panel
-            
+           
             panelState = {
-                open: true, isNew: true, taskId: null, taskIndex: -1, columnTasks: [], columnKey: colKey,
+                open: true, isNew: true, taskId: null, taskIndex: -1, periodType: panelState.periodType, periodDate: panelState.periodDate, periodTasks: panelState.periodTasks,
                 editData: { titre: preset.titre || '', description: preset.description || '', type: preset.type || 'tache', priorite: preset.priorite || '3', statut: preset.statut || 'todo', progression: 0, dateDebut: dateToGrist(today), dateEcheance: dateToGrist(addDays(today, 7)), projet: preset.projet !== undefined ? preset.projet : (projects.length > 0 ? projects[0].id : null), assignees: [], dependDe: [], tags: [], estimationH: preset.estimationH || null, tempsPasse: null, subtasks: normalizeSubtasks(preset.subtasks), categorie: categorie }
             };
             renderPanelTask();
