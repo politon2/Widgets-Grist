@@ -950,7 +950,7 @@ function renderProjects(comp, ft) {
             <div class="project-info">
                 <div class="project-name">${escapeHtml(p.nom)}</div>
                 <div class="project-meta">
-                    <span>Resp : ${escapeHtml(responsableName || '—')}</span>
+                    ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><span class="avatar" style="background:${responsableColor};width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-size:0.7rem;color:#fff">${escapeHtml(responsableInitials)}</span></span>` : '<span>—</span>'}
                     <span>PRT : ${escapeHtml(p.prt || '—')}</span>
                     ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>Division : —</span>'}
                     ${moaName ? `<span style="background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px">${escapeHtml(moaName)}</span>` : '<span>MOA : —</span>'}
