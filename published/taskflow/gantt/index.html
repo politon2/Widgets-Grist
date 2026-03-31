@@ -423,7 +423,7 @@
                 </div>
             </div>
             <div class="filter-dropdown" id="createTaskDropdown">
-                <button class="btn primary" onclick="toggleFilterMenu('create')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg> Tâche ▾</button>
+                <button class="btn primary" onclick="toggleFilterMenu('filterCreateMenu')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg> Tâche ▾</button>
                 <div class="filter-menu" id="filterCreateMenu">
                     <div class="filter-option" onclick="openCreatePanelWithCategory('architecture')">🏗️ Architecture</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('fonctionnel')">⚙️ Fonctionnel</div>
@@ -1312,23 +1312,24 @@
                     assignees: [], dependDe: [], tags: [], estimationH: null, tempsPasse: null, subtasks: []
                 }
             };
-            renderPanel();
+            renderPanelTask();
             openPanel();
             render();
             setTimeout(() => { const el = document.getElementById('taskTitle'); if (el) el.focus(); }, 100);
         }
 
         function openCreatePanelWithCategory(categorie) {
+            const now = Date.now();
             const categoryPresets = {
-                architecture: { priorite: '3', type: 'tache', titre: 'Architecture', description: 'Tâche d\'architecture', subtasks: [{ id: Date.now(), text: 'Créer DDS', done: false }, { id: Date.now() + 1, text: 'Kickoff', done: false }, { id: Date.now() + 2, text: 'DAv0', done: false }, { id: Date.now() + 3, text: 'DAv1', done: false }] },
-                fonctionnel: { priorite: '3', type: 'tache', titre: 'Fonctionnel', description: 'Tâche fonctionnelle', subtasks: [{ id: Date.now(), text: 'Expression de Besoins', done: false }, { id: Date.now() + 1, text: 'Présentation MOA', done: false }, { id: Date.now() + 2, text: 'CdC v0', done: false }, { id: Date.now() + 3, text: 'CdC v1 ou SFG', done: false }] },
-                budget: { priorite: '3', type: 'tache', titre: 'Budget', description: 'Tâche budgétaire', subtasks: [{ id: Date.now(), text: 'Budget Roadmap', done: false }, { id: Date.now() + 1, text: 'PRT Palier', done: false }, { id: Date.now() + 2, text: 'Budget projet validé', done: false }] },
-                transfert: { priorite: '3', type: 'tache', titre: 'Transfert', description: 'Tâche de transfert', subtasks: [{ id: Date.now(), text: 'Support de transfert', done: false }, { id: Date.now() + 1, text: 'Nomination équipe projet', done: false }, { id: Date.now() + 2, text: 'Présentation MOE', done: false }, { id: Date.now() + 3, text: 'Demande d\'EPC', done: false }, { id: Date.now() + 4, text: 'Présentation TMA', done: false }] },
-                technique: { priorite: '3', type: 'tache', titre: 'Technique', description: 'Tâche technique', subtasks: [{ id: Date.now(), text: 'Créer DDS Sécurité', done: false }, { id: Date.now() + 1, text: 'Réunion ENF', done: false }, { id: Date.now() + 2, text: 'Revue technique', done: false }] }
+                architecture: { priorite: '3', type: 'tache', titre: 'Architecture', description: 'Tâche d\'architecture', subtasks: [{ id: now, text: 'Créer DDS', done: false }, { id: now + 1, text: 'Kickoff', done: false }, { id: now + 2, text: 'DAv0', done: false }, { id: now + 3, text: 'DAv1', done: false }] },
+                fonctionnel: { priorite: '3', type: 'tache', titre: 'Fonctionnel', description: 'Tâche fonctionnelle', subtasks: [{ id: now + 10, text: 'Expression de Besoins', done: false }, { id: now + 11, text: 'Présentation MOA', done: false }, { id: now + 12, text: 'CdC v0', done: false }, { id: now + 13, text: 'CdC v1 ou SFG', done: false }] },
+                budget: { priorite: '3', type: 'tache', titre: 'Budget', description: 'Tâche budgétaire', subtasks: [{ id: now + 20, text: 'Budget Roadmap', done: false }, { id: now + 21, text: 'PRT Palier', done: false }, { id: now + 22, text: 'Budget projet validé', done: false }] },
+                transfert: { priorite: '3', type: 'tache', titre: 'Transfert', description: 'Tâche de transfert', subtasks: [{ id: now + 30, text: 'Support de transfert', done: false }, { id: now + 31, text: 'Nomination équipe projet', done: false }, { id: now + 32, text: 'Présentation MOE', done: false }, { id: now + 33, text: 'Demande d\'EPC', done: false }, { id: now + 34, text: 'Présentation TMA', done: false }] },
+                technique: { priorite: '3', type: 'tache', titre: 'Technique', description: 'Tâche technique', subtasks: [{ id: now + 40, text: 'Créer DDS Sécurité', done: false }, { id: now + 41, text: 'Réunion ENF', done: false }, { id: now + 42, text: 'Revue technique', done: false }] }
             };
             const preset = categoryPresets[categorie] || {};
             openCreatePanelForColumnWithPreset(preset, categorie);
-            toggleFilterMenu('create'); // Fermer le menu après sélection
+            toggleFilterMenu('filterCreateMenu'); // Fermer le menu après sélection
         }
 
         function openCreatePanelForColumnWithPreset(preset, categorie) {
@@ -1342,7 +1343,7 @@
                     assignees: [], dependDe: [], tags: [], estimationH: preset.estimationH || null, tempsPasse: null, subtasks: normalizeSubtasks(preset.subtasks), categorie: categorie
                 }
             };
-            renderPanel();
+            renderPanelTask();
             openPanel();
             render();
             setTimeout(() => { const el = document.getElementById('taskTitle'); if (el) el.focus(); }, 100);
