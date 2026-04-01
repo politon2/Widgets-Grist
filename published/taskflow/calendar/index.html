@@ -1518,7 +1518,7 @@
             document.getElementById('panel').classList.remove('open'); 
             document.getElementById('gridContainer').classList.remove('panel-open'); 
             document.getElementById('panelOverlay').classList.remove('visible');
-            panelState = { open: false, isNew: false, taskId: null, taskIndex: -1, columnTasks: [], columnKey: null, editData: null }; 
+            panelState = { open: false, isNew: false, taskId: null, taskIndex: -1, periodTasks: [], columnKey: null, editData: null }; 
             selectedTaskId = null; 
             render(); 
         }
@@ -1531,24 +1531,61 @@
             }
         }
 
+        function openDayPanel(date) {
+
+            selectedDate = date;
+
+            const ft = getFilteredTasks().filter(t => {
+
+                const s = gristToDate(t.dateDebut), e = gristToDate(t.dateEcheance) || s;
+
+                return s && startOfDay(s) <= date && endOfDay(e || s) >= date;
+
+            });
+
+
+            panelState = { open: true, mode: 'period', periodType: 'day', periodDate: date, periodTasks: ft, taskId: null, taskIndex: -1, isNew: false, editData: null };
+
+            renderPanelPeriod();
+
+            openPanel();
+
+            render();
+
+        }
+
+
+
+        function openWeekPanel(date) {
+
+            const weekStart = getWeekStart(date);
+            const weekEnd = addDays(weekStart, 6);
+            const ft = getFilteredTasks().filter(t => {
+
+                const s = gristToDate(t.dateDebut), e = gristToDate(t.dateEcheance) || s;
+
+                return s && startOfDay(s) <= weekEnd && endOfDay(e || s) >= weekStart;
+
+            });
+
+
+            panelState = { open: true, mode: 'period', periodType: 'week', periodDate: weekStart, periodTasks: ft, taskId: null, taskIndex: -1, isNew: false, editData: null };
+
+            renderPanelPeriod();
+
+            openPanel();
+
+        }
+
         function openTaskPanel(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
             selectedTaskId = taskId;
-            
-            // Find column tasks for navigation
-            const ft = getFilteredTasks();
-            const columns = buildColumns(ft);
-            let colKey = null, colTasks = [];
-            for (const col of columns) {
-                const idx = col.tasks.findIndex(t => t.id === taskId);
-                if (idx !== -1) { colKey = col.key; colTasks = col.tasks; break; }
-            }
-            
+
+            const idx = panelState.periodTasks.findIndex(t => t.id === taskId);
+            panelState.mode = 'task';
             panelState.taskId = taskId;
-            panelState.taskIndex = colTasks.findIndex(t => t.id === taskId);
-            panelState.columnTasks = colTasks;
-            panelState.columnKey = colKey;
+            panelState.taskIndex = idx >= 0 ? idx : 0;
             panelState.isNew = false;
             panelState.editData = cloneTaskData(task);
             renderPanelTask();
@@ -1557,7 +1594,28 @@
             render();
         }
 
-        function openCreatePanel() { openCreatePanelForColumn(groupBy === 'statut' ? 'todo' : groupBy === 'priorite' ? '3' : projects.length ? String(projects[0].id) : 'none'); }
+        //function openCreatePanel() { 
+        //    openCreatePanelForColumn(groupBy === 'statut' ? 'todo' : groupBy === 'priorite' ? '3' : projects.length ? String(projects[0].id) : 'none'); 
+        function openCreatePanel(date = null) {
+            const today = new Date();
+            const targetDate = date || selectedDate || today;
+            panelState = {
+                open: true, mode: 'task', periodType: panelState.periodType, periodDate: panelState.periodDate,
+
+                periodTasks: panelState.periodTasks, taskId: null, taskIndex: -1, isNew: true,
+                editData: {
+                    titre: '', description: '', type: 'tache', priorite: '3', statut: 'todo', progression: 0,
+                    dateDebut: dateToGrist(targetDate), dateEcheance: dateToGrist(addDays(targetDate, 7)),
+                    projet: projects.length > 0 ? projects[0].id : null,
+                    assignees: [], dependDe: [], tags: [], estimationH: null, tempsPasse: null, subtasks: []
+                }
+            };
+            renderPanelTask();
+            openPanel();
+            render();
+            setTimeout(() => document.getElementById('taskTitle')?.focus(), 100);
+
+        }
         
         function openCreatePanelWithCategory(categorie) {
             const categoryPresets = {
@@ -1615,11 +1673,11 @@
         }
 
         function navigatePanelTask(dir) {
-            if (panelState.isNew || panelState.columnTasks.length < 2) return;
+            if (panelState.isNew || panelState.periodTasks.length < 2) return;
             let newIdx = panelState.taskIndex + dir;
-            if (newIdx < 0) newIdx = panelState.columnTasks.length - 1;
-            if (newIdx >= panelState.columnTasks.length) newIdx = 0;
-            const t = panelState.columnTasks[newIdx];
+            if (newIdx < 0) newIdx = panelState.periodTasks.length - 1;
+            if (newIdx >= panelState.periodTasks.length) newIdx = 0;
+            const t = panelState.periodTasks[newIdx];
             if (t) openTaskPanel(t.id);
         }
 
