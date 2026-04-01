@@ -490,26 +490,34 @@
         </div>
         <div class="header-right">
             <div class="filter-dropdown">
-                <div class="filter-btn" id="filterProjectBtn" onclick="toggleFilter('project')">Projets ▾</div>
+                <div class="filter-btn" id="filterProjectBtn" onclick="toggleFilterMenu('project')">Projets ▾</div>
                 <div class="filter-menu" id="filterProjectMenu"></div>
             </div>
             <div class="filter-dropdown">
-                <div class="filter-btn" id="filterPriorityBtn" onclick="toggleFilter('priority')">Priorités ▾</div>
+                <div class="filter-btn" id="filterDivisionBtn" onclick="toggleFilterMenu('division')">Divisions ▾</div>
+                <div class="filter-menu" id="filterDivisionMenu"></div>
+            </div>
+            <div class="filter-dropdown">
+                <div class="filter-btn" id="filterPriorityBtn" onclick="toggleFilterMenu('priority')">Priorités ▾</div>
                 <div class="filter-menu" id="filterPriorityMenu"></div>
             </div>
             <div class="filter-dropdown">
-                <div class="filter-btn" id="filterAssigneeBtn" onclick="toggleFilter('assignee')">Équipe ▾</div>
+                <div class="filter-btn" id="filterAssigneeBtn" onclick="toggleFilterMenu('assignee')">Assignés ▾</div>
                 <div class="filter-menu" id="filterAssigneeMenu"></div>
             </div>
+            <div class="filter-dropdown">
+                <div class="filter-btn" id="filterStatusBtn" onclick="toggleFilterMenu('status')">Statuts ▾</div>
+                <div class="filter-menu" id="filterStatusMenu"></div>
+            </div>
             <div class="filter-dropdown" id="exportDropdown">
-                <button class="btn" onclick="toggleFilter('export')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Exporter ▾</button>
+                <button class="btn" onclick="toggleFilterMenu('export')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Exporter ▾</button>
                 <div class="filter-menu" id="filterExportMenu">
                     <div class="filter-option" onclick="exportPrint()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Imprimer / PDF</div>
                     <div class="filter-option" onclick="exportPNG()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Image PNG</div>
                 </div>
             </div>
             <div class="filter-dropdown" id="createTaskDropdown">
-                <button class="btn primary" onclick="toggleFilter('create')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg> Tâche ▾</button>
+                <button class="btn primary" onclick="toggleFilterMenu('create')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg> Tâche ▾</button>
                 <div class="filter-menu" id="filterCreateMenu">
                     <div class="filter-option" onclick="openCreatePanelWithCategory('architecture')">🏗️ Architecture</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('fonctionnel')">⚙️ Fonctionnel</div>
@@ -771,37 +779,37 @@
         // ═══════════════════════════════════════════════════════════════════════
         // FILTERS
         // ═══════════════════════════════════════════════════════════════════════
-        function toggleFilter(type) {
-            document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('open'));
-            document.getElementById(`filter${type.charAt(0).toUpperCase() + type.slice(1)}Menu`).classList.toggle('open');
-        }
-        
+        function setGroupBy(g) { groupBy = g; document.querySelectorAll('.group-selector .btn').forEach(b => b.classList.remove('active')); document.getElementById('group' + g.charAt(0).toUpperCase() + g.slice(1)).classList.add('active'); render(); }
+        function toggleFilterMenu(type) { document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('open')); document.getElementById(`filter${type.charAt(0).toUpperCase() + type.slice(1)}Menu`).classList.toggle('open'); }
         function updateFilterMenus() {
-            document.getElementById('filterProjectMenu').innerHTML = projects.map(p => 
-                `<div class="filter-option" onclick="toggleFilterValue('project', ${p.id})"><input type="checkbox" ${filters.project.includes(p.id) ? 'checked' : ''}><span style="color:${p.couleur||'#6366f1'}">●</span> ${escapeHtml(p.nom)}</div>`
-            ).join('') || '<div class="filter-option">Aucun projet</div>';
-            
-            document.getElementById('filterPriorityMenu').innerHTML = [1,2,3,4].map(p => 
-                `<div class="filter-option" onclick="toggleFilterValue('priority', ${p})"><input type="checkbox" ${filters.priority.includes(p) ? 'checked' : ''}><span style="color:${PRIORITY_COLORS[p]}">●</span> ${PRIORITY_LABELS[p]}</div>`
-            ).join('');
-            
-            // GEN-02: Filtre par équipe
-            document.getElementById('filterAssigneeMenu').innerHTML = team.filter(m => m.actif !== false).map(m => 
-                `<div class="filter-option" onclick="toggleFilterValue('assignee', ${m.id})"><input type="checkbox" ${filters.assignee.includes(m.id) ? 'checked' : ''}>${escapeHtml(m.nom)}</div>`
-            ).join('') || '<div class="filter-option">Aucun membre</div>';
-            
+            document.getElementById('filterProjectMenu').innerHTML = projects.map(p => `<div class="filter-option" onclick="toggleFilterValue('project', ${p.id})"><input type="checkbox" ${filters.project.includes(p.id) ? 'checked' : ''}><span style="color:${p.couleur}">●</span> ${escapeHtml(p.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
+            document.getElementById('filterDivisionMenu').innerHTML = [...new Set(projects.map(p => p.division).filter(d => d))].map(divisionId => {
+                const divisionName = getDivisionName(divisionId);
+                return `<div class="filter-option" onclick="toggleFilterValue('division', ${divisionId})"><input type="checkbox" ${filters.division.includes(divisionId) ? 'checked' : ''}>${escapeHtml(divisionName)}</div>`;
+            }).join('') || '<div class="filter-option">Aucun</div>';
+            document.getElementById('filterPriorityMenu').innerHTML = [1,2,3,4].map(p => `<div class="filter-option" onclick="toggleFilterValue('priority', ${p})"><input type="checkbox" ${filters.priority.includes(p) ? 'checked' : ''}><span style="color:${PRIORITY_COLORS[p]}">●</span> ${PRIORITY_LABELS[p]}</div>`).join('');
+            document.getElementById('filterAssigneeMenu').innerHTML = team.filter(m => m.actif !== false).map(m => `<div class="filter-option" onclick="toggleFilterValue('assignee', ${m.id})"><input type="checkbox" ${filters.assignee.includes(m.id) ? 'checked' : ''}>${escapeHtml(m.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
+            // KAN-01: Filtre par statut
+            document.getElementById('filterStatusMenu').innerHTML = Object.entries(STATUS_LABELS).map(([key, label]) => `<div class="filter-option" onclick="toggleFilterValue('status', '${key}')"><input type="checkbox" ${filters.status.includes(key) ? 'checked' : ''}>${label}</div>`).join('');
             document.getElementById('filterProjectBtn').classList.toggle('has-filter', filters.project.length > 0);
+            document.getElementById('filterDivisionBtn').classList.toggle('has-filter', filters.division.length > 0);
             document.getElementById('filterPriorityBtn').classList.toggle('has-filter', filters.priority.length > 0);
             document.getElementById('filterAssigneeBtn').classList.toggle('has-filter', filters.assignee.length > 0);
+            document.getElementById('filterStatusBtn').classList.toggle('has-filter', filters.status.length > 0);
         }
-        
-        function toggleFilterValue(type, val) {
-            const arr = filters[type];
-            const idx = arr.indexOf(val);
-            if (idx === -1) arr.push(val); else arr.splice(idx, 1);
-            updateFilterMenus();
-            broadcastFilters();  // GEN-02
-            render();
+        function toggleFilterValue(type, val) { const arr = filters[type]; const idx = arr.indexOf(val); if (idx === -1) arr.push(val); else arr.splice(idx, 1); updateFilterMenus(); broadcastFilters(); render(); }
+        function handleSearch(q) { searchQuery = q.toLowerCase(); render(); }
+        function getFilteredTasks() {
+            return tasks.filter(t => {
+                if (filters.project.length && !filters.project.includes(t.projet)) return false;
+                if (filters.division.length && !filters.division.includes(getProjectDivision(t.projet))) return false;
+                if (filters.priority.length && !filters.priority.includes(getPriority(t))) return false;
+                if (filters.assignee.length && !getAssignees(t).some(a => filters.assignee.includes(a))) return false;
+                // KAN-01: Filtre par statut
+                if (filters.status.length && !filters.status.includes(t.statut || 'todo')) return false;
+                if (searchQuery && !(t.titre||'').toLowerCase().includes(searchQuery)) return false;
+                return true;
+            });
         }
         
         // GEN-02: Broadcast des filtres vers les autres widgets
@@ -810,15 +818,6 @@
                 try { grist.setOption('filters', { project: filters.project, priority: filters.priority, assignee: filters.assignee }); } 
                 catch (e) { console.log('setOption not available'); }
             }
-        }
-        
-        function getFilteredTasks() {
-            return tasks.filter(t => {
-                if (filters.project.length && !filters.project.includes(t.projet)) return false;
-                if (filters.priority.length && !filters.priority.includes(getPriority(t))) return false;
-                if (filters.assignee.length && !getAssignees(t).some(a => filters.assignee.includes(a))) return false;  // GEN-02
-                return true;
-            });
         }
 
         // ═══════════════════════════════════════════════════════════════════════
