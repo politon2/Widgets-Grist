@@ -1690,7 +1690,7 @@
             if (!data) { closePanel(); return; }
 
             const canNavigate = panelState.periodTasks.length > 1 && !panelState.isNew;
-            const navLabel = !panelState.isNew && panelState.columnTasks.length > 1 ? `${panelState.taskIndex + 1}/${panelState.columnTasks.length}` : '';
+            const navLabel = !panelState.isNew && panelState.periodTasks.length > 1 ? `${panelState.taskIndex + 1}/${panelState.periodTasks.length}` : '';
             header.innerHTML = `<div class="panel-nav"><button class="panel-nav-btn" onclick="navigatePanelTask(-1)" ${!canNavigate ? 'disabled' : ''}>◀</button>${navLabel ? `<span class="panel-title">${navLabel}</span>` : ''}<button class="panel-nav-btn" onclick="navigatePanelTask(1)" ${!canNavigate ? 'disabled' : ''}>▶</button></div><button class="panel-close" onclick="confirmClosePanel()">×</button>`;
 
             const s = gristToDate(data.dateDebut), e = gristToDate(data.dateEcheance);
