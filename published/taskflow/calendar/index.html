@@ -1515,7 +1515,7 @@
         function closePanel() { 
             panelState.open = false; 
             document.getElementById('panel').classList.remove('open'); 
-            document.getElementById('kanbanContainer').classList.remove('panel-open'); 
+            document.getElementById('gridContainer').classList.remove('panel-open'); 
             document.getElementById('panelOverlay').classList.remove('visible');
             panelState = { open: false, isNew: false, taskId: null, taskIndex: -1, columnTasks: [], columnKey: null, editData: null }; 
             selectedTaskId = null; 
