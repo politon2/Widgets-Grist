@@ -1936,10 +1936,18 @@
             render();
         }
 
-        // Subtasks/Checklist
+        // FUT-01: Gestion des subtasks/checklist
         function getSubtasks(task) {
             if (!task?.subtasks) return [];
             try { return JSON.parse(task.subtasks); } catch (e) { return []; }
+        }
+        function normalizeSubtasks(subtasks) {
+            if (!subtasks) return [];
+            if (Array.isArray(subtasks)) return subtasks;
+            if (typeof subtasks === 'string') {
+                try { return JSON.parse(subtasks); } catch (e) { return []; }
+            }
+            return [];
         }
         function subtasksToJson(subtasks) {
             return JSON.stringify(subtasks || []);
@@ -1955,17 +1963,17 @@
             updateSubtaskProgress();
             if (!panelState.isNew && gristReady) saveTaskToGrist();
             renderPanelTask();
-            render();
+            render();  // FIX: Actualiser l'affichage des cartes
         }
         function toggleSubtask(id) {
             const data = panelState.editData;
             if (!data.subtasks) return;
             const st = data.subtasks.find(s => s.id === id);
-            if (st) {
-                st.done = !st.done;
+            if (st) { 
+                st.done = !st.done; 
                 updateSubtaskProgress();
                 if (!panelState.isNew && gristReady) saveTaskToGrist();
-                renderPanelTask();
+                renderPanelTask(); 
                 render();
             }
         }
@@ -1973,12 +1981,12 @@
             const data = panelState.editData;
             if (!data.subtasks) return;
             const idx = data.subtasks.findIndex(s => s.id === id);
-            if (idx !== -1) {
-                data.subtasks.splice(idx, 1);
+            if (idx !== -1) { 
+                data.subtasks.splice(idx, 1); 
                 updateSubtaskProgress();
                 if (!panelState.isNew && gristReady) saveTaskToGrist();
-                renderPanelTask();
-                render();
+                renderPanelTask(); 
+                render();  // FIX: Actualiser l'affichage des cartes
             }
         }
         function updateSubtaskProgress() {
@@ -1987,11 +1995,12 @@
             const done = data.subtasks.filter(s => s.done).length;
             const total = data.subtasks.length;
             data.progression = Math.round((done / total) * 100);
-            syncLocalTask();
+            syncLocalTask();  // FIX: Synchroniser immédiatement pour affichage correct
         }
         function handleSubtaskKeydown(e) {
             if (e.key === 'Enter') { e.preventDefault(); addSubtask(); }
         }
+
 
         function toggleMultiSelect(id) {
             const el = document.getElementById(id);
