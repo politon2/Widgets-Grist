@@ -480,13 +480,13 @@
             </div>
             <button class="btn" onclick="goToday()">Aujourd'hui</button>
             <div class="view-controls">
+                <button class="btn" onclick="setView('workweek')" id="btnWorkweek">Semaine</button>
                 <button class="btn active" onclick="setView('month')" id="btnMonth">Mois</button>
-                <button class="btn" onclick="setView('biweek')" id="btnBiweek">2 Sem</button>
-                <button class="btn" onclick="setView('week')" id="btnWeek">Semaine</button>
-                <button class="btn" onclick="setView('workweek')" id="btnWorkweek">5 Jours</button>
-                <button class="btn" onclick="setView('year')" id="btnYear">Année</button>
+                <!--<button class="btn" onclick="setView('biweek')" id="btnBiweek">2 Sem</button>-->
+                <!--<button class="btn" onclick="setView('week')" id="btnWeek">Semaine</button>-->
                 <button class="btn" onclick="setView('quarter')" id="btnQuarter">Trim.</button>
                 <button class="btn" onclick="setView('semester')" id="btnSemester">6 Mois</button>
+                <button class="btn" onclick="setView('year')" id="btnYear">Année</button>
             </div>
         </div>
         <div class="header-right">
@@ -498,10 +498,10 @@
                 <div class="filter-btn" id="filterDivisionBtn" onclick="toggleFilterMenu('division')">Divisions ▾</div>
                 <div class="filter-menu" id="filterDivisionMenu"></div>
             </div>
-            <div class="filter-dropdown">
+            <!--<div class="filter-dropdown">
                 <div class="filter-btn" id="filterPriorityBtn" onclick="toggleFilterMenu('priority')">Priorités ▾</div>
                 <div class="filter-menu" id="filterPriorityMenu"></div>
-            </div>
+            </div>-->
             <div class="filter-dropdown">
                 <div class="filter-btn" id="filterAssigneeBtn" onclick="toggleFilterMenu('assignee')">Assignés ▾</div>
                 <div class="filter-menu" id="filterAssigneeMenu"></div>
