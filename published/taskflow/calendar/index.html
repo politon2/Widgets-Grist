@@ -182,7 +182,8 @@
         .mini-day.today { background: var(--primary); color: white; font-weight: 600; }
         .mini-day.has-events { background: var(--primary-light); font-weight: 500; }
         /* Compact View (Quarter / Semester) — Option 1 : mois expansés */
-        .compact-grid { flex: 1; display: none; gap: 1px; padding: 0; overflow: hidden; overflow-y: auto; background: var(--border); }
+        /*initialement : overflow: hidden; mais KO pour 6 mois*/
+        .compact-grid { flex: 1; display: none; gap: 1px; padding: 0; overflow-y: auto; background: var(--border); }
         /* Mini-mois expansé (Trim./6 Mois) */
         .mini-month.expanded { border-radius: 0; padding: 0; box-shadow: none; display: flex; flex-direction: column; border: none; cursor: pointer; transition: background 0.15s; background: var(--card-bg); }
         .mini-month.expanded:hover { transform: none; border-color: transparent; background: rgba(62,93,231,0.02); }
