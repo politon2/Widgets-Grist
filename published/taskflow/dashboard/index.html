@@ -1154,8 +1154,8 @@ async function loadAllData() {
             grist.docApi.fetchTable('Divisions').catch(()=>({})),
             grist.docApi.fetchTable('Moa').catch(()=>({})),
         ]);
-        pd.sort((a, b) => a.nom.localeCompare(b.nom)); // Tri par nom
         tasks=convert(td); projects=convert(pd); team=convert(md); divisions=convert(dd); moa=convert(mm);
+        projects.sort((a, b) => a.nom.localeCompare(b.nom)); // Tri par nom
         render();
     } catch(e) { console.log('Error loading data:', e); }
 }
