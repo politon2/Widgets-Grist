@@ -769,11 +769,31 @@
         }
 
         async function loadAllData() {
-            try { tasks = convertGristToRecords(await grist.docApi.fetchTable('Tasks')); } catch (e) { tasks = []; }
-            try { team = convertGristToRecords(await grist.docApi.fetchTable('Team')); } catch (e) { team = []; }
-            try { projects = convertGristToRecords(await grist.docApi.fetchTable('Projects')); } catch (e) { projects = []; }
-            try { moa = convertGristToRecords(await grist.docApi.fetchTable('Moa')); } catch (e) { moa = []; }
-            try { divisions = convertGristToRecords(await grist.docApi.fetchTable('Divisions')); } catch (e) { divisions = []; }
+            try {
+                tasks = convertGristToRecords(await grist.docApi.fetchTable('Tasks'));
+            //    tasks.sort((a, b) => a.titre.localeCompare(b.titre)); // Tri par titre
+            } catch (e) { tasks = []; }
+
+            try {
+                team = convertGristToRecords(await grist.docApi.fetchTable('Team'));
+                team.sort((a, b) => a.nom.localeCompare(b.nom)); // Tri par nom
+            } catch (e) { team = []; }
+
+            try {
+                projects = convertGristToRecords(await grist.docApi.fetchTable('Projects'));
+                projects.sort((a, b) => a.nom.localeCompare(b.nom)); // Tri par nom
+            } catch (e) { projects = []; }
+
+            try {
+                moa = convertGristToRecords(await grist.docApi.fetchTable('Moa'));
+                moa.sort((a, b) => a.nom.localeCompare(b.nom)); // Tri par nom
+            } catch (e) { moa = []; }
+
+            try {
+                divisions = convertGristToRecords(await grist.docApi.fetchTable('Divisions'));
+                divisions.sort((a, b) => a.nom.localeCompare(b.nom)); // Tri par nom
+            } catch (e) { divisions = []; }
+
             gristReady = true;
             updateFilterMenus();
             render();
