@@ -222,7 +222,7 @@
         .status-pill:hover { border-color: var(--primary); }
         .status-pill.selected { background: var(--primary); color: white; border-color: var(--primary); }
         .progress-container { display: flex; align-items: center; gap: 10px; }
-        .progress-slider { flex: 1; -webkit-appearance: none; height: 6px; border-radius: 3px; background: var(--border); }
+        .progress-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; background: var(--border); }
         .progress-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--primary); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
         .progress-value { font-size: 0.85rem; font-weight: 600; color: var(--primary); min-width: 40px; text-align: right; }
         .progress-presets { display: flex; gap: 6px; margin-top: 8px; }
@@ -406,12 +406,16 @@
             </div>
         </div>
         <div class="header-right">
-            <div class="filter-dropdown" id="filterProject">
-                <div class="filter-btn" onclick="toggleFilterMenu('filterProject')"><span id="filterProjectLabel">Projet ▾</span></div>
+            <div class="filter-dropdown">
+                <div class="filter-btn" id="filterProjectBtn" onclick="toggleFilterMenu('project')">Projets ▾</div>
                 <div class="filter-menu" id="filterProjectMenu"></div>
             </div>
-            <div class="filter-dropdown" id="filterAssignee">
-                <div class="filter-btn" onclick="toggleFilterMenu('filterAssignee')"><span id="filterAssigneeLabel">Assigné ▾</span></div>
+            <div class="filter-dropdown">
+                <div class="filter-btn" id="filterDivisionBtn" onclick="toggleFilterMenu('division')">Divisions ▾</div>
+                <div class="filter-menu" id="filterDivisionMenu"></div>
+            </div>
+            <div class="filter-dropdown">
+                <div class="filter-btn" id="filterAssigneeBtn" onclick="toggleFilterMenu('assignee')">Assignés ▾</div>
                 <div class="filter-menu" id="filterAssigneeMenu"></div>
             </div>
             <div class="active-filters" id="activeFilters"></div>
@@ -778,12 +782,8 @@
         // ═══════════════════════════════════════════════════════════════════════
         // SORTING & FILTERING
         // ═══════════════════════════════════════════════════════════════════════
-        function changeSortMode(mode) { sortMode = mode; sortTasks(); render(); }
-        function sortTasks() {
-            if (sortMode === 'priority') tasks.sort((a, b) => { const pa = getTaskPriority(a), pb = getTaskPriority(b); return pa !== pb ? pa - pb : (a.dateDebut || 0) - (b.dateDebut || 0); });
-            else if (sortMode === 'date') tasks.sort((a, b) => (a.dateDebut || 0) - (b.dateDebut || 0));
-        }
-        function toggleFilterMenu(id) { const m = document.querySelector('#' + id + ' .filter-menu'); const open = m.classList.contains('open'); document.querySelectorAll('.filter-menu').forEach(x => x.classList.remove('open')); if (!open) m.classList.add('open'); }
+        function setGroupBy(g) { groupBy = g; document.querySelectorAll('.group-selector .btn').forEach(b => b.classList.remove('active')); document.getElementById('group' + g.charAt(0).toUpperCase() + g.slice(1)).classList.add('active'); render(); }
+        function toggleFilterMenu(type) { document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('open')); document.getElementById(`filter${type.charAt(0).toUpperCase() + type.slice(1)}Menu`).classList.toggle('open'); }
         // GEN-02: Gestion des filtres avec arrays et synchronisation
         function toggleFilter(key, val) { 
             const arr = filters[key]; 
@@ -793,6 +793,16 @@
             updateFilterUI(); 
             broadcastFilters();
             render(); 
+        }
+        
+        
+        
+        
+        
+        function changeSortMode(mode) { sortMode = mode; sortTasks(); render(); }
+        function sortTasks() {
+            if (sortMode === 'priority') tasks.sort((a, b) => { const pa = getTaskPriority(a), pb = getTaskPriority(b); return pa !== pb ? pa - pb : (a.dateDebut || 0) - (b.dateDebut || 0); });
+            else if (sortMode === 'date') tasks.sort((a, b) => (a.dateDebut || 0) - (b.dateDebut || 0));
         }
         function clearFilter(key) { filters[key] = []; updateFilterUI(); broadcastFilters(); render(); }
         function broadcastFilters() {
