@@ -784,16 +784,7 @@
         // ═══════════════════════════════════════════════════════════════════════
         function setGroupBy(g) { groupBy = g; document.querySelectorAll('.group-selector .btn').forEach(b => b.classList.remove('active')); document.getElementById('group' + g.charAt(0).toUpperCase() + g.slice(1)).classList.add('active'); render(); }
         function toggleFilterMenu(type) { document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('open')); document.getElementById(`filter${type.charAt(0).toUpperCase() + type.slice(1)}Menu`).classList.toggle('open'); }
-        // GEN-02: Gestion des filtres avec arrays et synchronisation
-        function toggleFilter(key, val) { 
-            const arr = filters[key]; 
-            const idx = arr.indexOf(val); 
-            if (idx === -1) arr.push(val); 
-            else arr.splice(idx, 1); 
-            updateFilterUI(); 
-            broadcastFilters();
-            render(); 
-        }
+        function toggleFilterValue(type, val) { const arr = filters[type]; const idx = arr.indexOf(val); if (idx === -1) arr.push(val); else arr.splice(idx, 1); updateFilterMenus(); broadcastFilters(); render(); }
         
         
         
@@ -804,65 +795,27 @@
             if (sortMode === 'priority') tasks.sort((a, b) => { const pa = getTaskPriority(a), pb = getTaskPriority(b); return pa !== pb ? pa - pb : (a.dateDebut || 0) - (b.dateDebut || 0); });
             else if (sortMode === 'date') tasks.sort((a, b) => (a.dateDebut || 0) - (b.dateDebut || 0));
         }
-        function clearFilter(key) { filters[key] = []; updateFilterUI(); broadcastFilters(); render(); }
+        // GEN-02: Broadcast des filtres vers les autres widgets
         function broadcastFilters() {
             if (gristReady && typeof grist !== 'undefined' && grist.setOption) {
-                try { grist.setOption('filters', { project: filters.project, priority: filters.priority, assignee: filters.assignee }); } 
+                try { grist.setOption('filters', { project: filters.project, division: filters.division, assignee: filters.assignee }); } 
                 catch (e) { console.log('setOption not available'); }
             }
         }
         function updateFilterMenus() {
-            // GEN-02: Menus avec checkboxes pour sélection multiple
-            document.getElementById('filterProjectMenu').innerHTML = projects.map(p => 
-                `<div class="filter-option" onclick="toggleFilter('project', ${p.id})">
-                    <input type="checkbox" ${filters.project.includes(p.id) ? 'checked' : ''}>
-                    <span class="dot" style="background:${p.couleur || '#6366f1'}"></span>${escapeHtml(p.nom)}
-                </div>`
-            ).join('') || '<div class="filter-option">Aucun projet</div>';
-            document.getElementById('filterAssigneeMenu').innerHTML = team.filter(m => m.actif !== false).map(m => 
-                `<div class="filter-option" onclick="toggleFilter('assignee', ${m.id})">
-                    <input type="checkbox" ${filters.assignee.includes(m.id) ? 'checked' : ''}>
-                    ${escapeHtml(m.nom)}
-                </div>`
-            ).join('') || '<div class="filter-option">Aucun membre</div>';
-            updateFilterUI();
+            document.getElementById('filterProjectMenu').innerHTML = projects.map(p => `<div class="filter-option" onclick="toggleFilterValue('project', ${p.id})"><input type="checkbox" ${filters.project.includes(p.id) ? 'checked' : ''}><span style="color:${p.couleur}">●</span> ${escapeHtml(p.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
+            document.getElementById('filterDivisionMenu').innerHTML = [...new Set(projects.map(p => p.division).filter(d => d))].map(divisionId => {
+                const divisionName = getDivisionName(divisionId);
+                return `<div class="filter-option" onclick="toggleFilterValue('division', ${divisionId})"><input type="checkbox" ${filters.division.includes(divisionId) ? 'checked' : ''}>${escapeHtml(divisionName)}</div>`;
+            }).join('') || '<div class="filter-option">Aucun</div>';
+            document.getElementById('filterAssigneeMenu').innerHTML = team.filter(m => m.actif !== false).map(m => `<div class="filter-option" onclick="toggleFilterValue('assignee', ${m.id})"><input type="checkbox" ${filters.assignee.includes(m.id) ? 'checked' : ''}>${escapeHtml(m.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
+            // KAN-01: Filtre par statut
+            document.getElementById('filterProjectBtn').classList.toggle('has-filter', filters.project.length > 0);
+            document.getElementById('filterDivisionBtn').classList.toggle('has-filter', filters.division.length > 0);
+            document.getElementById('filterAssigneeBtn').classList.toggle('has-filter', filters.assignee.length > 0);
         }
-        function updateFilterUI() {
-            const projBtn = document.querySelector('#filterProject .filter-btn');
-            const assBtn = document.querySelector('#filterAssignee .filter-btn');
-            projBtn.className = 'filter-btn' + (filters.project.length ? ' active' : '');
-            assBtn.className = 'filter-btn' + (filters.assignee.length ? ' active' : '');
-            
-            // Labels des boutons
-            if (filters.project.length === 1) {
-                document.getElementById('filterProjectLabel').textContent = getProjectName(filters.project[0]) + ' ▾';
-            } else if (filters.project.length > 1) {
-                document.getElementById('filterProjectLabel').textContent = filters.project.length + ' projets ▾';
-            } else {
-                document.getElementById('filterProjectLabel').textContent = 'Projet ▾';
-            }
-            
-            if (filters.assignee.length === 1) {
-                const mem = team.find(m => m.id === filters.assignee[0]);
-                document.getElementById('filterAssigneeLabel').textContent = (mem?.nom || 'Assigné') + ' ▾';
-            } else if (filters.assignee.length > 1) {
-                document.getElementById('filterAssigneeLabel').textContent = filters.assignee.length + ' personnes ▾';
-            } else {
-                document.getElementById('filterAssigneeLabel').textContent = 'Assigné ▾';
-            }
-            
-            // Chips actifs
-            const chips = [];
-            filters.project.forEach(id => {
-                const name = getProjectName(id);
-                if (name) chips.push(`<span class="filter-chip">${escapeHtml(name)}<button onclick="toggleFilter('project',${id})">×</button></span>`);
-            });
-            filters.assignee.forEach(id => {
-                const mem = team.find(m => m.id === id);
-                if (mem) chips.push(`<span class="filter-chip">${escapeHtml(mem.nom)}<button onclick="toggleFilter('assignee',${id})">×</button></span>`);
-            });
-            document.getElementById('activeFilters').innerHTML = chips.join('');
-        }
+        function toggleFilterValue(type, val) { const arr = filters[type]; const idx = arr.indexOf(val); if (idx === -1) arr.push(val); else arr.splice(idx, 1); updateFilterMenus(); broadcastFilters(); render(); }
+        
         function taskMatchesFilters(t) {
             if (filters.project.length && !filters.project.includes(t.projet)) return false;
             if (filters.assignee.length && !getAssigneesArray(t).some(a => filters.assignee.includes(a))) return false;
