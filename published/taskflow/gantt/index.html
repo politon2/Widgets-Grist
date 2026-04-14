@@ -498,7 +498,7 @@
             { key: 'dates', label: 'Dates', format: (t) => formatDateShort(gristToDate(t.dateDebut)) + ' → ' + formatDateShort(gristToDate(t.dateEcheance)) },
             { key: 'projet', label: 'Projet', format: (t) => t.projet ? getProjectName(t.projet) : null },
             { key: 'progression', label: 'Progression', format: (t) => (t.progression || 0) + '%' },
-            { key: 'assignees', label: 'Assignés', format: (t) => { const a = getAssigneesArray(t); return a.length ? a.map(id => getTeamMemberName(id)).filter(Boolean).join(', ') : null; } }
+            { key: 'assignees', label: 'Assignés', format: (t) => { const a = getAssignees(t); return a.length ? a.map(id => getTeamMemberName(id)).filter(Boolean).join(', ') : null; } }
         ];
         const PRIORITY_COLORS = { 1: '#ef4444', 2: '#f59e0b', 3: '#3b82f6', 4: '#64748b' };
         const COLOR_PRESETS = ['#3e5de7','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'];
@@ -595,21 +595,28 @@
         }
         function showSaveIndicator() { const el = document.getElementById('saveIndicator'); el.classList.add('visible'); clearTimeout(saveTimeout); saveTimeout = setTimeout(() => el.classList.remove('visible'), 1500); }
 
-        // RefList/ChoiceList helpers
-        function getRefListArray(val) { if (!val) return []; if (Array.isArray(val)) return val[0] === 'L' ? val.slice(1).map(Number).filter(n => !isNaN(n)) : val.map(Number).filter(n => !isNaN(n)); return []; }
-        function toGristRefList(arr) { return arr && arr.length ? ['L', ...arr] : null; }
-        function getChoiceListArray(val) { if (!val) return []; if (Array.isArray(val)) return val[0] === 'L' ? val.slice(1) : val; return []; }
-        function toGristChoiceList(arr) { return arr && arr.length ? ['L', ...arr] : null; }
-        const getAssigneesArray = (t) => getRefListArray(t?.assignees);
-        const getDependsOnArray = (t) => getRefListArray(t?.dependDe);
-        const getTagsArray = (t) => getChoiceListArray(t?.tags);
-
-        // Project/Team helpers
+        const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate() + n); return r; };
         const getProjectName = (id) => { const p = projects.find(x => x.id === id); return p?.nom || ''; };
+        const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return p?.division || ''; };
         const getProjectColor = (id) => { const p = projects.find(x => x.id === id); return p?.couleur || '#64748b'; };
+        const getProjectManagerName = (id) => { const p = projects.find(x => x.id === id); if (!p?.responsable) return ''; const m = team.find(x => x.id === p.responsable); return m?.nom || ''; };
+        const getProjectManagerColor = (id) => { const p = projects.find(x => x.id === id); if (!p?.responsable) return '#64748b'; const m = team.find(x => x.id === p.responsable); return m?.couleur || '#64748b'; };
+        const getDivisionName = (id) => { const d = divisions.find(x => x.id === id); return d?.nom || ''; };
+        const getDivisionColor = (id) => { const d = divisions.find(x => x.id === id); return d?.couleur || '#64748b'; };
         const getTeamMemberName = (id) => { const m = team.find(x => x.id === id); return m?.nom || ''; };
-        const getTeamMemberColor = (id) => { const m = team.find(x => x.id === id); return m?.couleur || '#3e5de7'; };
+        // TEAM-01: Couleur personnalisée par membre
+        const getTeamMemberColor = (id) => { const m = team.find(x => x.id === id); return m?.couleur || '#3e5de7'; };  // Défaut: primary
         const getInitials = (n) => n ? n.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2) : '?';
+        const getRefListArray = (val) => { if (!val) return []; if (Array.isArray(val)) return val[0] === 'L' ? val.slice(1).map(Number).filter(n => !isNaN(n)) : val.map(Number).filter(n => !isNaN(n)); return []; };
+        const toGristRefList = (arr) => arr && arr.length ? ['L', ...arr] : null;
+        const getChoiceListArray = (val) => { if (!val) return []; if (Array.isArray(val)) return val[0] === 'L' ? val.slice(1) : val; return []; };
+        const toGristChoiceList = (arr) => arr && arr.length ? ['L', ...arr] : null;
+        const getAssignees = (t) => getRefListArray(t?.assignees);
+        const getDependsOn = (t) => getRefListArray(t?.dependDe);
+        const getTags = (t) => getChoiceListArray(t?.tags);
+        const getPriority = (t) => (t?.priorite >= 1 && t?.priorite <= 4) ? parseInt(t.priorite) : 3;
+
+
 
         // Dependency cycle detection
         function wouldCreateCycle(taskId, depId, visited = new Set()) {
@@ -618,10 +625,10 @@
             visited.add(depId);
             const depTask = tasks.find(t => t.id === depId);
             if (!depTask) return false;
-            return getDependsOnArray(depTask).some(d => wouldCreateCycle(taskId, d, visited));
+            return getDependsOn(depTask).some(d => wouldCreateCycle(taskId, d, visited));
         }
         function getAvailableDependencies(taskId, projectId) { return tasks.filter(t => t.id !== taskId && t.projet === projectId && !wouldCreateCycle(taskId, t.id)); }
-        function getBlockedTasks(taskId) { return tasks.filter(t => getDependsOnArray(t).includes(taskId)); }
+        function getBlockedTasks(taskId) { return tasks.filter(t => getDependsOn(t).includes(taskId)); }
         
         // GANTT-06: Propagation des dates aux tâches dépendantes
         function propagateDependencyDates(changedTaskId, visited = new Set()) {
@@ -818,7 +825,7 @@
         
         function taskMatchesFilters(t) {
             if (filters.project.length && !filters.project.includes(t.projet)) return false;
-            if (filters.assignee.length && !getAssigneesArray(t).some(a => filters.assignee.includes(a))) return false;
+            if (filters.assignee.length && !getAssignees(t).some(a => filters.assignee.includes(a))) return false;
             if (filters.priority.length && !filters.priority.includes(getTaskPriority(t))) return false;
             return true;
         }
@@ -983,7 +990,7 @@
                 const jalon = isJalon(t);
                 const progress = t.progression || 0;
                 const selected = t.id === selectedTaskId;
-                const assignees = getAssigneesArray(t);
+                const assignees = getAssignees(t);
                 const avatarsHtml = assignees.length ? '<div class="task-avatars">' + assignees.slice(0, 2).map(id => '<div class="task-avatar" style="background:' + getTeamMemberColor(id) + '">' + getInitials(getTeamMemberName(id)) + '</div>').join('') + (assignees.length > 2 ? '<div class="task-avatar more">+' + (assignees.length - 2) + '</div>' : '') + '</div>' : '';
 
                 html += '<div class="task-row ' + (selected ? 'selected' : '') + '" data-id="' + t.id + '" onclick="openTaskPanel(' + t.id + ')">' +
@@ -1152,7 +1159,7 @@
             ft.forEach((t, i) => taskIndexMap[t.id] = i);
 
             ft.forEach(t => {
-                const deps = getDependsOnArray(t);
+                const deps = getDependsOn(t);
                 deps.forEach(depId => {
                     const depTask = tasks.find(x => x.id === depId);
                     if (!depTask || taskIndexMap[depId] === undefined) return;
@@ -1328,7 +1335,7 @@
                 titre: task.titre || '', description: task.description || '', type: task.type || 'tache',
                 priorite: String(task.priorite || '3'), statut: task.statut || 'todo', progression: task.progression || 0,
                 dateDebut: task.dateDebut, dateEcheance: task.dateEcheance, projet: task.projet || null,
-                assignees: getAssigneesArray(task), dependDe: getDependsOnArray(task), tags: getTagsArray(task),
+                assignees: getAssignees(task), dependDe: getDependsOn(task), tags: getTags(task),
                 estimationH: task.estimationH || null, tempsPasse: task.tempsPasse || null, subtasks: getSubtasks(task)
             };
         }
