@@ -1376,8 +1376,8 @@
             const data = panelState.editData;
             if (!data) { closePanel(); return; }
 
-            const canNavigate = panelState.columnTasks.length > 1 && !panelState.isNew;
-            const navLabel = !panelState.isNew && panelState.columnTasks.length > 1 ? `${panelState.taskIndex + 1}/${panelState.columnTasks.length}` : '';
+            const canNavigate = panelState.taskList.length > 1 && !panelState.isNew;
+            const navLabel = !panelState.isNew && panelState.taskList.length > 1 ? `${panelState.taskIndex + 1}/${panelState.taskList.length}` : '';
             header.innerHTML = `<div class="panel-nav"><button class="panel-nav-btn" onclick="navigatePanelTask(-1)" ${!canNavigate ? 'disabled' : ''}>◀</button>${navLabel ? `<span class="panel-title">${navLabel}</span>` : ''}<button class="panel-nav-btn" onclick="navigatePanelTask(1)" ${!canNavigate ? 'disabled' : ''}>▶</button></div><button class="panel-close" onclick="confirmClosePanel()">×</button>`;
 
             const s = gristToDate(data.dateDebut), e = gristToDate(data.dateEcheance);
