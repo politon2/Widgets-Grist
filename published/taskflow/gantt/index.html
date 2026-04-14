@@ -595,7 +595,6 @@
         }
         function showSaveIndicator() { const el = document.getElementById('saveIndicator'); el.classList.add('visible'); clearTimeout(saveTimeout); saveTimeout = setTimeout(() => el.classList.remove('visible'), 1500); }
 
-        const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate() + n); return r; };
         const getProjectName = (id) => { const p = projects.find(x => x.id === id); return p?.nom || ''; };
         const getProjectDivision = (id) => { const p = projects.find(x => x.id === id); return p?.division || ''; };
         const getProjectColor = (id) => { const p = projects.find(x => x.id === id); return p?.couleur || '#64748b'; };
