@@ -1274,7 +1274,7 @@
             panelState.taskIndex = idx >= 0 ? idx : 0;
             panelState.editData = cloneTaskData(task);
 
-            renderPanel();
+            renderPanelTask();
             openPanel();
             if (gristReady) grist.setSelectedRows([taskId]);
             render();
@@ -1573,7 +1573,7 @@
 
             const visualFields = ['type', 'priorite', 'statut', 'projet', 'progression', 'dateDebut', 'dateEcheance'];
             if (visualFields.includes(field)) {
-                renderPanel();
+                renderPanelTask();
                 if (!panelState.isNew) render();
             }
 
@@ -1613,7 +1613,7 @@
             if (data.type === 'jalon') data.dateEcheance = data.dateDebut;
             syncLocalTask();
             if (!panelState.isNew && gristReady) saveTaskToGrist();
-            renderPanel();
+            renderPanelTask();
             render();
         }
 
@@ -1643,7 +1643,7 @@
             input.value = '';
             updateSubtaskProgress();
             if (!panelState.isNew && gristReady) saveTaskToGrist();
-            renderPanel();
+            renderPanelTask();
             render();
         }
         function toggleSubtask(id) {
@@ -1654,7 +1654,7 @@
                 st.done = !st.done;
                 updateSubtaskProgress();
                 if (!panelState.isNew && gristReady) saveTaskToGrist();
-                renderPanel();
+                renderPanelTask();
                 render();
             }
         }
@@ -1666,7 +1666,7 @@
                 data.subtasks.splice(idx, 1);
                 updateSubtaskProgress();
                 if (!panelState.isNew && gristReady) saveTaskToGrist();
-                renderPanel();
+                renderPanelTask();
                 render();
             }
         }
@@ -1695,7 +1695,7 @@
             else data.assignees.splice(idx, 1);
             syncLocalTask();  // FIX
             if (!panelState.isNew && gristReady) saveTaskToGrist();
-            renderPanel();
+            renderPanelTask();
             render();
         }
 
@@ -1706,7 +1706,7 @@
                 data.assignees.splice(idx, 1);
                 syncLocalTask();  // FIX
                 if (!panelState.isNew && gristReady) saveTaskToGrist();
-                renderPanel();
+                renderPanelTask();
                 render();
             }
         }
@@ -1721,7 +1721,7 @@
                     showSaveIndicator();
                 } catch (e) { showToast('Erreur mise à jour couleur', 'error'); }
             }
-            renderPanel();
+            renderPanelTask();
             render();
         }
 
@@ -1732,7 +1732,7 @@
             else data.dependDe.splice(idx, 1);
             syncLocalTask();  // FIX
             if (!panelState.isNew && gristReady) saveTaskToGrist();
-            renderPanel();
+            renderPanelTask();
             render();
         }
 
@@ -1743,7 +1743,7 @@
                 data.dependDe.splice(idx, 1);
                 syncLocalTask();  // FIX
                 if (!panelState.isNew && gristReady) saveTaskToGrist();
-                renderPanel();
+                renderPanelTask();
                 render();
             }
         }
@@ -1758,13 +1758,13 @@
                     e.target.value = '';
                     syncLocalTask();  // FIX
                     if (!panelState.isNew && gristReady) saveTaskToGrist();
-                    renderPanel();
+                    renderPanelTask();
                 }
             } else if (e.key === 'Backspace' && !e.target.value && data.tags.length) {
                 data.tags.pop();
                 syncLocalTask();  // FIX
                 if (!panelState.isNew && gristReady) saveTaskToGrist();
-                renderPanel();
+                renderPanelTask();
             }
         }
 
@@ -1775,7 +1775,7 @@
                 data.tags.splice(idx, 1);
                 syncLocalTask();  // FIX
                 if (!panelState.isNew && gristReady) saveTaskToGrist();
-                renderPanel();
+                renderPanelTask();
             }
         }
 
