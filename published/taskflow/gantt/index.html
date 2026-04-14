@@ -823,6 +823,7 @@
         
         function taskMatchesFilters(t) {
             if (filters.project.length && !filters.project.includes(t.projet)) return false;
+            if (filters.division.length && !filters.division.includes(getProjectDivision(t.projet))) return false;
             if (filters.assignee.length && !getAssignees(t).some(a => filters.assignee.includes(a))) return false;
             if (filters.priority.length && !filters.priority.includes(getTaskPriority(t))) return false;
             return true;
