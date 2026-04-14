@@ -506,8 +506,7 @@
         // ═══════════════════════════════════════════════════════════════════════
         // STATE
         // ═══════════════════════════════════════════════════════════════════════
-        let gristReady = false;
-        let tasks = [], team = [], projects = [];
+        let tasks = [], team = [], projects = [], divisions = [], moa = [], gristReady = false;
         let currentView = localStorage.getItem('taskflow_gantt_view') || 'month';
         let viewStartDate = new Date();
         let selectedTaskId = null;
@@ -523,6 +522,18 @@
         let effectivePxPerDay = 34;         // pxPerDay réel (utilisé aussi dans drag/drop)
         let saveTimeout = null;
 
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SCHEMA & CONSTANTS
+        // ═══════════════════════════════════════════════════════════════════════
+        const TASKFLOW_SCHEMA = {
+            Divisions: [{ id: 'nom', type: 'Text' }, { id: 'libelle', type: 'Text' }, { id: 'couleur', type: 'Text' }],
+            Moa: [{ id: 'nom', type: 'Text' }, { id: 'responsable', type: 'Text' }, { id: 'couleur', type: 'Text' }],
+            Team: [{ id: 'nom', type: 'Text' }, { id: 'email', type: 'Text' }, { id: 'avatar', type: 'Text' }, { id: 'role', type: 'Choice' }, { id: 'actif', type: 'Bool' }, { id: 'couleur', type: 'Text' }],  // TEAM-01: couleur membre
+            Projects: [{ id: 'nom', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateFin', type: 'Date' }, { id: 'responsable', type: 'Ref:Team' }, { id: 'actif', type: 'Bool' }, { id: 'prt', type: 'Text' }, { id: 'moa', type: 'Ref:Moa' }, { id: 'division', type: 'Ref:Divisions' }, { id: 'budget', type: 'Numeric' }, { id: 'fabricants', type: 'Text' }, { id: 'commentaire', type: 'Text' }],
+            Tasks: [{ id: 'titre', type: 'Text' }, { id: 'description', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateEcheance', type: 'Date' }, { id: 'priorite', type: 'Choice' }, { id: 'statut', type: 'Choice' }, { id: 'progression', type: 'Numeric' }, { id: 'projet', type: 'Ref:Projects' }, { id: 'assignees', type: 'RefList:Team' }, { id: 'type', type: 'Choice' }, { id: 'categorie', type: 'Choice' }, { id: 'dependDe', type: 'RefList:Tasks' }, { id: 'tags', type: 'ChoiceList' }, { id: 'estimationH', type: 'Numeric' }, { id: 'tempsPasse', type: 'Numeric' }, { id: 'dds', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'subtasks', type: 'Text' }]  // FUT-01: subtasks en JSON
+        };
+        
         // ═══════════════════════════════════════════════════════════════════════
         // UTILITIES
         // ═══════════════════════════════════════════════════════════════════════
@@ -1321,18 +1332,18 @@
         function openCreatePanelWithCategory(categorie) {
             const now = Date.now();
             const categoryPresets = {
-                architecture: { priorite: '3', type: 'tache', titre: 'Architecture', description: 'Tâche d\'architecture', subtasks: [{ id: now, text: 'Créer DDS', done: false }, { id: now + 1, text: 'Kickoff', done: false }, { id: now + 2, text: 'DAv0', done: false }, { id: now + 3, text: 'DAv1', done: false }] },
-                fonctionnel: { priorite: '3', type: 'tache', titre: 'Fonctionnel', description: 'Tâche fonctionnelle', subtasks: [{ id: now + 10, text: 'Expression de Besoins', done: false }, { id: now + 11, text: 'Présentation MOA', done: false }, { id: now + 12, text: 'CdC v0', done: false }, { id: now + 13, text: 'CdC v1 ou SFG', done: false }] },
-                budget: { priorite: '3', type: 'tache', titre: 'Budget', description: 'Tâche budgétaire', subtasks: [{ id: now + 20, text: 'Budget Roadmap', done: false }, { id: now + 21, text: 'PRT Palier', done: false }, { id: now + 22, text: 'Budget projet validé', done: false }] },
-                transfert: { priorite: '3', type: 'tache', titre: 'Transfert', description: 'Tâche de transfert', subtasks: [{ id: now + 30, text: 'Support de transfert', done: false }, { id: now + 31, text: 'Nomination équipe projet', done: false }, { id: now + 32, text: 'Présentation MOE', done: false }, { id: now + 33, text: 'Demande d\'EPC', done: false }, { id: now + 34, text: 'Présentation TMA', done: false }] },
-                technique: { priorite: '3', type: 'tache', titre: 'Technique', description: 'Tâche technique', subtasks: [{ id: now + 40, text: 'Créer DDS Sécurité', done: false }, { id: now + 41, text: 'Réunion ENF', done: false }, { id: now + 42, text: 'Revue technique', done: false }] }
+                architecture: { priorite: '3', type: 'tache', titre: 'Architecture', description: 'Tâche d\'architecture', subtasks: [{ id: Date.now(), text: 'Créer DDS', done: false }, { id: Date.now() + 1, text: 'Kickoff', done: false }, { id: Date.now() + 2, text: 'DAv0', done: false }, { id: 1774856563420, text: 'DAv1', done: false }] },
+                fonctionnel: { priorite: '3', type: 'tache', titre: 'Fonctionnel', description: 'Tâche fonctionnelle', subtasks: [{ id: Date.now(), text: 'Expression de Besoins', done: false }, { id: Date.now() + 1, text: 'Présentation MOA', done: false }, { id: Date.now() + 2, text: 'CdC v0', done: false }, { id: Date.now() + 3, text: 'CdC v1 ou SFG', done: false }] },
+                budget: { priorite: '3', type: 'tache', titre: 'Budget', description: 'Tâche budgétaire', subtasks: [{ id: Date.now(), text: 'Budget Roadmap', done: false }, { id: Date.now() + 1, text: 'PRT Palier', done: false }, { id: Date.now() + 2, text: 'Budget projet validé', done: false }] },
+                transfert: { priorite: '3', type: 'tache', titre: 'Transfert', description: 'Tâche de transfert', subtasks: [{ id: Date.now(), text: 'Support de transfert', done: false }, { id: Date.now() + 1, text: 'Nomination équipe projet', done: false }, { id: Date.now() + 2, text: 'Présentation MOE', done: false }, { id: Date.now() + 3, text: 'Demande d\'EPC', done: false }, { id: Date.now() + 4, text: 'Présentation TMA', done: false }] },
+                technique: { priorite: '3', type: 'tache', titre: 'Technique', description: 'Tâche technique', subtasks: [{ id: Date.now(), text: 'Créer DDS Sécurité', done: false }, { id: Date.now() + 1, text: 'Réunion ENF', done: false }, { id: Date.now() + 2, text: 'Revue technique', done: false }] }
             };
             const preset = categoryPresets[categorie] || {};
-            openCreatePanelForColumnWithPreset(preset, categorie);
+            openCreatePanelWithPreset(preset, categorie);
             toggleFilterMenu('filterCreateMenu'); // Fermer le menu après sélection
         }
 
-        function openCreatePanelForColumnWithPreset(preset, categorie) {
+        function openCreatePanelWithPreset(preset, categorie) {
             const today = new Date();
             panelState = {
                 open: true, isNew: true, taskId: null, taskIndex: -1, taskList: panelState.taskList,
@@ -1991,69 +2002,38 @@
         }
 
         // ═══════════════════════════════════════════════════════════════════════
-        // GRIST INTEGRATION
+        // GRIST
         // ═══════════════════════════════════════════════════════════════════════
-        function convert(data) {
-            if (!data || Array.isArray(data)) return data || [];
-            const cols = Object.keys(data);
-            if (!cols.length) return [];
-            const n = data[cols[0]]?.length || 0;
-            const r = [];
-            for (let i = 0; i < n; i++) { const rec = {}; cols.forEach(c => rec[c] = data[c][i]); r.push(rec); }
-            return r;
-        }
-
-        const TASKFLOW_SCHEMA = {
-            Team: [{ id: 'nom', type: 'Text' }, { id: 'email', type: 'Text' }, { id: 'avatar', type: 'Text' }, { id: 'role', type: 'Choice' }, { id: 'actif', type: 'Bool' }, { id: 'couleur', type: 'Text' }],  // TEAM-01
-            Projects: [{ id: 'nom', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateFin', type: 'Date' }, { id: 'responsable', type: 'Ref:Team' }, { id: 'actif', type: 'Bool' }],
-            Tasks: [{ id: 'titre', type: 'Text' }, { id: 'description', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateEcheance', type: 'Date' }, { id: 'priorite', type: 'Choice' }, { id: 'statut', type: 'Choice' }, { id: 'progression', type: 'Numeric' }, { id: 'projet', type: 'Ref:Projects' }, { id: 'assignees', type: 'RefList:Team' }, { id: 'type', type: 'Choice' }, { id: 'dependDe', type: 'RefList:Tasks' }, { id: 'tags', type: 'ChoiceList' }, { id: 'estimationH', type: 'Numeric' }, { id: 'tempsPasse', type: 'Numeric' }, { id: 'couleur', type: 'Text' }]
-        };
-
-        async function ensureSchema() {
-            let created = 0, added = 0;
-            const tablesCreated = [];
-
-            for (const [tableName, columns] of Object.entries(TASKFLOW_SCHEMA)) {
-                let existingCols = [], tableExists = false;
-                try { existingCols = Object.keys(await grist.docApi.fetchTable(tableName)).filter(c => c !== 'id' && c !== 'manualSort'); tableExists = true; }
-                catch (e) { try { await grist.docApi.applyUserActions([['AddTable', tableName, columns.map(c => ({ id: c.id, type: c.type }))]]); tablesCreated.push(tableName); created++; continue; } catch (e2) { continue; } }
-                if (tableExists) { const missing = columns.filter(c => !existingCols.includes(c.id)); for (const col of missing) { try { await grist.docApi.applyUserActions([['AddColumn', tableName, col.id, { type: col.type }]]); added++; } catch (e) {} } }
-            }
-            if (tablesCreated.includes('Tasks')) await seedData();
-            if (created > 0 || added > 0) showToast('Schema initialisé (' + created + ' tables, ' + added + ' colonnes)', 'success');
-        }
-
-        async function seedData() {
-            const today = new Date();
-            const day = (d) => new Date(today.getFullYear(), today.getMonth(), today.getDate() + d).getTime() / 1000;
-            try {
-                await grist.docApi.applyUserActions([
-                    ['AddRecord', 'Team', null, { nom: 'Alice Martin', email: 'alice@cerema.fr', role: 'Chef de projet', actif: true }],
-                    ['AddRecord', 'Team', null, { nom: 'Bob Durant', email: 'bob@cerema.fr', role: 'Développeur', actif: true }],
-                    ['AddRecord', 'Team', null, { nom: 'Claire Bernard', email: 'claire@cerema.fr', role: 'Designer', actif: true }]
-                ]);
-                await grist.docApi.applyUserActions([
-                    ['AddRecord', 'Projects', null, { nom: 'Refonte Portail', couleur: '#4f46e5', dateDebut: day(-15), dateFin: day(45), responsable: 1, actif: true }],
-                    ['AddRecord', 'Projects', null, { nom: 'App Mobile', couleur: '#10b981', dateDebut: day(-5), dateFin: day(60), responsable: 2, actif: true }]
-                ]);
-                await grist.docApi.applyUserActions([
-                    ['AddRecord', 'Tasks', null, { titre: 'Cahier des charges', dateDebut: day(-15), dateEcheance: day(-8), priorite: '1', statut: 'done', progression: 100, projet: 1, type: 'tache', assignees: ['L', 1] }],
-                    ['AddRecord', 'Tasks', null, { titre: 'Maquettes UI/UX', dateDebut: day(-10), dateEcheance: day(-2), priorite: '2', statut: 'done', progression: 100, projet: 1, type: 'tache', assignees: ['L', 3] }],
-                    ['AddRecord', 'Tasks', null, { titre: 'Développement frontend', dateDebut: day(-3), dateEcheance: day(12), priorite: '1', statut: 'inprogress', progression: 35, projet: 1, type: 'tache', assignees: ['L', 2, 3], dependDe: ['L', 2] }],
-                    ['AddRecord', 'Tasks', null, { titre: 'Validation design', dateDebut: day(-2), dateEcheance: day(-2), priorite: '2', statut: 'done', progression: 100, projet: 1, type: 'jalon' }],
-                    ['AddRecord', 'Tasks', null, { titre: 'API backend', dateDebut: day(-5), dateEcheance: day(10), priorite: '1', statut: 'inprogress', progression: 55, projet: 1, type: 'tache', assignees: ['L', 2] }],
-                    ['AddRecord', 'Tasks', null, { titre: 'Proto mobile v1', dateDebut: day(1), dateEcheance: day(20), priorite: '2', statut: 'todo', progression: 0, projet: 2, type: 'tache', assignees: ['L', 2] }],
-                    ['AddRecord', 'Tasks', null, { titre: 'Livraison MVP', dateDebut: day(28), dateEcheance: day(28), priorite: '1', statut: 'todo', progression: 0, projet: 1, type: 'jalon', dependDe: ['L', 3, 5] }]
-                ]);
-            } catch (e) { console.log('Seed error:', e); }
-        }
-
+        function convertGristToRecords(data) { if (!data || Array.isArray(data)) return data || []; const cols = Object.keys(data); if (!cols.length) return []; const n = data[cols[0]]?.length || 0; const records = []; for (let i = 0; i < n; i++) { const rec = {}; cols.forEach(k => { rec[k] = data[k][i]; }); records.push(rec); } return records; }
+        async function ensureSchema() { let created = 0; const tablesCreated = []; for (const [tableName, columns] of Object.entries(TASKFLOW_SCHEMA)) { let existingCols = [], tableExists = false; try { const data = await grist.docApi.fetchTable(tableName); existingCols = Object.keys(data).filter(c => c !== 'id' && c !== 'manualSort'); tableExists = true; } catch (e) { try { await grist.docApi.applyUserActions([['AddTable', tableName, columns.map(c => ({ id: c.id, type: c.type }))]]); tablesCreated.push(tableName); created++; continue; } catch (e2) { continue; } } if (tableExists) { const missing = columns.filter(c => !existingCols.includes(c.id)); for (const col of missing) { try { await grist.docApi.applyUserActions([['AddColumn', tableName, col.id, { type: col.type }]]); } catch (e) {} } } } if (tablesCreated.includes('Tasks')) await seedData(); }
+        async function seedData() { const today = new Date(); const day = (d) => Math.floor(new Date(today.getFullYear(), today.getMonth(), today.getDate() + d).getTime() / 1000); try { await grist.docApi.applyUserActions([['AddRecord', 'Team', null, { nom: 'Alice Martin', actif: true }], ['AddRecord', 'Team', null, { nom: 'Bob Durant', actif: true }], ['AddRecord', 'Team', null, { nom: 'Claire Bernard', actif: true }]]); await grist.docApi.applyUserActions([['AddRecord', 'Projects', null, { nom: 'Refonte Portail', couleur: '#4f46e5', actif: true }], ['AddRecord', 'Projects', null, { nom: 'App Mobile', couleur: '#10b981', actif: true }]]); await grist.docApi.applyUserActions([['AddRecord', 'Tasks', null, { titre: 'Analyse', priorite: '1', statut: 'done', progression: 100, projet: 1, type: 'tache', dateDebut: day(-10), dateEcheance: day(-5), assignees: ['L', 1] }], ['AddRecord', 'Tasks', null, { titre: 'Dev Backend', priorite: '1', statut: 'inprogress', progression: 40, projet: 1, type: 'tache', dateDebut: day(-4), dateEcheance: day(10), assignees: ['L', 1, 2], dependDe: ['L', 1], estimationH: 32, tempsPasse: 12 }], ['AddRecord', 'Tasks', null, { titre: 'Design UI', priorite: '2', statut: 'review', progression: 80, projet: 2, type: 'tache', dateDebut: day(-5), dateEcheance: day(2), assignees: ['L', 3] }], ['AddRecord', 'Tasks', null, { titre: 'Livraison', priorite: '1', statut: 'todo', projet: 1, type: 'jalon', dateDebut: day(15), dateEcheance: day(15), dependDe: ['L', 2] }], ['AddRecord', 'Tasks', null, { titre: 'Tests QA', priorite: '3', statut: 'todo', projet: 2, type: 'tache', dateDebut: day(5), dateEcheance: day(12), tags: ['L', 'qa'] }]]); } catch (e) { console.log('Seed error:', e); } }
         async function loadAllData() {
-            try { tasks = convert(await grist.docApi.fetchTable('Tasks')); } catch (e) { tasks = []; }
-            try { team = convert(await grist.docApi.fetchTable('Team')); } catch (e) { team = []; }
-            try { projects = convert(await grist.docApi.fetchTable('Projects')); } catch (e) { projects = []; }
+            try {
+                tasks = convertGristToRecords(await grist.docApi.fetchTable('Tasks'));
+            //    tasks.sort((a, b) => a.titre.localeCompare(b.titre)); // Tri par titre
+            } catch (e) { tasks = []; }
+
+            try {
+                team = convertGristToRecords(await grist.docApi.fetchTable('Team'));
+                team.sort((a, b) => a.nom.localeCompare(b.nom)); // Tri par nom
+            } catch (e) { team = []; }
+
+            try {
+                projects = convertGristToRecords(await grist.docApi.fetchTable('Projects'));
+                projects.sort((a, b) => a.nom.localeCompare(b.nom)); // Tri par nom
+            } catch (e) { projects = []; }
+
+            try {
+                moa = convertGristToRecords(await grist.docApi.fetchTable('Moa'));
+                moa.sort((a, b) => a.nom.localeCompare(b.nom)); // Tri par nom
+            } catch (e) { moa = []; }
+
+            try {
+                divisions = convertGristToRecords(await grist.docApi.fetchTable('Divisions'));
+                divisions.sort((a, b) => a.nom.localeCompare(b.nom)); // Tri par nom
+            } catch (e) { divisions = []; }
+
             gristReady = true;
-            sortTasks();
             updateFilterMenus();
             render();
         }
