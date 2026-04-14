@@ -427,14 +427,13 @@
                 </div>
             </div>
             <div class="filter-dropdown" id="createTaskDropdown">
-                <button class="btn primary" onclick="toggleFilterMenu('filterCreateMenu')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg> Tâche ▾</button>
+                <button class="btn primary" onclick="toggleFilterMenu('create')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg> Tâche ▾</button>
                 <div class="filter-menu" id="filterCreateMenu">
                     <div class="filter-option" onclick="openCreatePanelWithCategory('architecture')">🏗️ Architecture</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('fonctionnel')">⚙️ Fonctionnel</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('technique')">🔧 Technique</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('budget')">💰 Budget</div>
                     <div class="filter-option" onclick="openCreatePanelWithCategory('transfert')">🔄 Transfert</div>
-                    
                 </div>
             </div>
         </div>
@@ -1309,7 +1308,7 @@
             };
             const preset = categoryPresets[categorie] || {};
             openCreatePanelWithPreset(preset, categorie);
-            toggleFilterMenu('filterCreateMenu'); // Fermer le menu après sélection
+            toggleFilterMenu('create'); // Fermer le menu après sélection
         }
 
         function openCreatePanelWithPreset(preset, categorie) {
