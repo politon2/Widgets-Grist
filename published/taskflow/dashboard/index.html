@@ -995,7 +995,7 @@ function renderProjects(comp, ft) {
         const budgetTot = p.budget_total ? parseFloat(p.budget_total).toLocaleString() + ' jH' : 'à définir';
         const budgetColor = p.budget_total ? '#79716B' : '#E7180B';
         const budgetAn = p.budget_an ? parseFloat(p.budget_an).toLocaleString() + ' jH' : '-';
-        const chargeExtAn = p.charge_ext_an ? parseFloat(p.charge_ext_an).toLocaleString() + ' jH' : '-';
+        const chargeExtAn = p.charge_ext_an ? parseFloat(p.charge_ext_an).toLocaleString() + ' jH' : '0 jH';
         const currentYear = new Date().getFullYear().toString();
         
         return `<div class="project-item">
@@ -1009,7 +1009,7 @@ function renderProjects(comp, ft) {
                     ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
                     ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}">${escapeHtml(moaName)}</span>` : '<span>—</span>'}
                     ${budgetTot ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${budgetColor}20;color:${budgetColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(budgetTot)}">${escapeHtml(budgetTot)}</span>` : '<span>—</span>'}
-                    ${budgetAn ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${budgetColor}20;color:${budgetColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(budgetAn)}">(${escapeHtml(currentYear)} ${escapeHtml(budgetAn)} - ext : ${escapeHtml(chargeExtAn)})</span>` : '<span>—</span>'}
+                    ${budgetAn && budgetTot != 'à définir' ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${budgetColor}20;color:${budgetColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(budgetAn)}">(${escapeHtml(currentYear)} : ${escapeHtml(budgetAn)} - ext : ${escapeHtml(chargeExtAn)})</span>` : '<span>—</span>'}
                 </div>
                 <div class="project-badges">
                     ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
