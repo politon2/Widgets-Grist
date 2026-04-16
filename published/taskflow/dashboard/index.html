@@ -992,6 +992,8 @@ function renderProjects(comp, ft) {
         const divisionColor = getDivisionColor(p.division);
         const responsableColor = getMemberColor(p.responsable);
         const responsableInitials = toInitials(responsableName || '');
+        const budgetTot = p.budget_total ? parseFloat(p.budget_total).toLocaleString() + '€' : 'à définir';
+        const budgetColor = p.budget_total ? '#79716B' : '#E7180B';
 
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
@@ -1003,6 +1005,7 @@ function renderProjects(comp, ft) {
                     <span>PRT: ${escapeHtml(p.prt || '—')}</span>
                     ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
                     ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}">${escapeHtml(moaName)}</span>` : '<span>—</span>'}
+                    ${budgetTot ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${budgetColor}20;color:${budgetColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(budgetTot)}">${escapeHtml(budgetTot)}</span>` : '<span>—</span>'}
                 </div>
                 <div class="project-badges">
                     ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
