@@ -992,11 +992,11 @@ function renderProjects(comp, ft) {
         const divisionColor = getDivisionColor(p.division);
         const responsableColor = getMemberColor(p.responsable);
         const responsableInitials = toInitials(responsableName || '');
-        const budgetTot = p.budget_total ? parseFloat(p.budget_total).toLocaleString() + 'jH' : 'à définir';
+        const budgetTot = p.budget_total ? parseFloat(p.budget_total).toLocaleString() + ' jH' : 'à définir';
         const budgetColor = p.budget_total ? '#79716B' : '#E7180B';
-        const budgetAn = p.budget_an ? parseFloat(p.budget_An).toLocaleString() + 'jH' : 'à définir';
-        const chargeExtAn = p.charge_ext_an ? parseFloat(p.charge_ext_an).toLocaleString() + 'jH' : 'à définir';
-        const currentYear = new Date().getFullYear().toLocaleString();
+        const budgetAn = p.budget_an ? parseFloat(p.budget_an).toLocaleString() + ' jH' : 'à définir';
+        const chargeExtAn = p.charge_ext_an ? parseFloat(p.charge_ext_an).toLocaleString() + ' jH' : 'à définir';
+        const currentYear = new Date().getFullYear().toString();
         
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
