@@ -1028,6 +1028,10 @@ function renderProjects(comp, fp, ft) {
                     ${renderAssigneeGroup('MOE', moe)}
                     ${renderAssigneeGroup('Techniques', techniques)}
                 </div>
+                <div class="project-progress">
+                    <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
+                    <div class="project-progress-text">${pct}%</div>
+                </div>
                 <div class="project-tasks-table">
                     <table>
                         <thead>
@@ -1052,10 +1056,6 @@ function renderProjects(comp, fp, ft) {
                         </tbody>
                     </table>
                 </div>
-            </div>
-            <div class="project-progress">
-                <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
-                <div class="project-progress-text">${pct}%</div>
             </div>
         </div>`;
     }).join('')}</div>`;
