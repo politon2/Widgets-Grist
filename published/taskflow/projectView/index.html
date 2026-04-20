@@ -166,7 +166,7 @@
         .project-item { display: flex; align-items: center; gap: 9px; }
         .project-color { width: 3px; height: 36px; border-radius: 2px; flex-shrink: 0; }
         .project-info { flex: 1; min-width: 0; }
-        .project-name { font-size: 0.8rem; font-weight: 500; }
+        .project-name { font-size: 0.8rem; font-weight: 700; }
         .project-stats { font-size: 0.69rem; color: var(--text-muted); }
         .project-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; }
         .project-meta span { display: inline-flex; align-items: center; gap: 4px; }
@@ -184,6 +184,8 @@
         .project-tasks-table th, .project-tasks-table td { padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--border); }
         .project-tasks-table th { background: var(--bg); font-weight: 600; color: var(--text-muted); }
         .project-tasks-table td { color: var(--text); }
+        .project-tasks-table tr.priority-3 { background: rgba(251, 191, 36, 0.15); }
+        .project-tasks-table tr.priority-4 { background: rgba(239, 68, 68, 0.12); }
 
         /* ── List ── */
         .list-items { display: flex; flex-direction: column; gap: 3px; }
@@ -446,20 +448,18 @@ function getFilteredProjects(compFilter) {
     let fp = projects;
     if (filters.periode !== 'all') {
         const pStart = getPeriodStart(filters.periode);
-        fp = fp.filter(t => { const d=gristToDate(p.dateFin); return d && d >= pStart; });
+        fp = fp.filter(p => { const d=gristToDate(p.dateFin); return d && d >= pStart; });
     }
-    if (filters.projets.length)  fp = fp.filter(p => filters.projets.includes(String(p.nom)));
-    if (filters.responsables.length) fp = fp.filter(p => filters.projets.includes(String(p.responsable)));
-    /*if (compFilter && compFilter.field && compFilter.value) {
+     if (filters.projets.length)  fp = fp.filter(p => filters.projets.includes(String(p.id)));
+    if (filters.responsables.length) fp = fp.filter(p => filters.responsables.includes(String(p.responsable)));
+    if (compFilter && compFilter.field && compFilter.value) {
         const {field, value} = compFilter;
-        fp = fp.filter(t => {
-            if (field==='statut')   return getStatus(t)===value;
-            if (field==='priorite') return String(getPriority(t))===String(value);
-            if (field==='projet')   return String(t.projet)===String(value);
-            if (field==='type')     return (t.type||'tache')===value;
+        fp = fp.filter(p => {
+            if (field==='projet')   return String(p.nom)===String(value);
+            if (field==='responsable')   return String(p.responsable)===String(value);
             return true;
         });
-    }*/
+    }
     return fp;
 }
 
@@ -914,9 +914,13 @@ function renderProjects(comp, fp, ft) {
     const stats = {};
     const byProjTasks = {};
 
+    fp.forEach(p => {
+        if (!p.name) return;
+        if (!stats[p.name]) stats[p.name] = { total:0, done:0 };
+    });
     ft.forEach(t => {
         if (!t.projet) return;
-        if (!stats[t.projet]) stats[t.projet] = { total:0, done:0 };
+        if (!stats[t.projet]) stats[t.projet] = { total:0, done:0 };    //inutile vu l'initialisation précédente à priori
         if (!byProjTasks[t.projet]) byProjTasks[t.projet] = [];
         byProjTasks[t.projet].push(t);
 
@@ -1012,7 +1016,6 @@ function renderProjects(comp, fp, ft) {
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
             <div class="project-info">
                 <div class="project-name">${escapeHtml(p.nom)}</div>
-                <div class="project-stats">${s.done}/${s.total} terminées</div>
                 <div class="project-meta">
                     ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="project-badge-avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
                     <span>PRT: ${escapeHtml(p.prt || '—')}</span>
@@ -1044,14 +1047,17 @@ function renderProjects(comp, fp, ft) {
                             </tr>
                         </thead>
                         <tbody>
-                            ${projectTasks.map(t => `
-                                <tr>
+                            ${projectTasks.sort((a, b) => (a.categorie || '').localeCompare(b.categorie || '')).map(t => {
+                                const prio = parseInt(t.priorite, 10);
+                                const prioClass = prio === 3 ? 'priority-3' : prio === 4 ? 'priority-4' : '';
+                                return `
+                                <tr class="${prioClass}">
                                     <td>${escapeHtml(t.titre || '')}</td>
                                     <td>${escapeHtml(t.description || '')}</td>
                                     <td>${t.dateDebut ? gristToDate(t.dateDebut).toLocaleDateString('fr-FR') : ''}</td>
                                     <td>${t.dateEcheance ? gristToDate(t.dateEcheance).toLocaleDateString('fr-FR') : ''}</td>
                                     <td>${t.progression || 0}%</td>
-                                </tr>
+                                    </tr>
                             `).join('')}
                         </tbody>
                     </table>
