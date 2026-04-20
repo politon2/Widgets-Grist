@@ -326,14 +326,7 @@
 // CATALOGUE & CONFIG
 // ═══════════════════════════════════════════════════════════════════════════════
 const CATALOG = {
-    kpi:      { label: 'KPI',        icon: '◈', defaultSpan: 1 },
-    donut:    { label: 'Donut',      icon: '◉', defaultSpan: 2 },
-    bars:     { label: 'Barres',     icon: '▦', defaultSpan: 2 },
-    list:     { label: 'Liste',      icon: '☰', defaultSpan: 4 },
-    workload: { label: 'Équipe',     icon: '◑', defaultSpan: 2 },
-    upcoming: { label: 'Échéances',  icon: '◷', defaultSpan: 2 },
-    projects: { label: 'Projets',    icon: '◧', defaultSpan: 2 },
-    velocity: { label: 'Vélocité',   icon: '↗', defaultSpan: 4 },
+    projects: { label: 'Projets',    icon: '☰', defaultSpan: 1 },
 };
 
 const CONFIG_FIELDS = {
@@ -359,16 +352,7 @@ const FILTER_FIELDS = [
 ];
 
 const DEFAULT_LAYOUT = [
-    { id:'c1', type:'kpi',      colSpan:1, title:'Total',      config:{ metric:'total' } },
-    { id:'c2', type:'kpi',      colSpan:1, title:'En cours',   config:{ metric:'inprogress' } },
-    { id:'c3', type:'kpi',      colSpan:1, title:'Terminées',  config:{ metric:'done' } },
-    { id:'c4', type:'kpi',      colSpan:1, title:'En retard',  config:{ metric:'late' } },
-    { id:'c5', type:'donut',    colSpan:2, title:'Par statut', config:{ groupBy:'statut' } },
-    { id:'c6', type:'bars',     colSpan:2, title:'Par priorité', config:{ groupBy:'priorite' } },
-    { id:'c7', type:'projects', colSpan:2, title:'Projets',    config:{} },
-    { id:'c8', type:'workload', colSpan:2, title:'Equipe', config:{ horizon:20 } },
-    { id:'c9', type:'upcoming', colSpan:2, title:'Échéances',  config:{ horizon:14 } },
-    
+    { id:'c1', type:'projects', colSpan:1, title:'Projets',    config:{} }, 
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
