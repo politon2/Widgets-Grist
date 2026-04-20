@@ -446,20 +446,21 @@ function getFilteredProjects(compFilter) {
     let fp = projects;
     if (filters.periode !== 'all') {
         const pStart = getPeriodStart(filters.periode);
-        fp = fp.filter(t => { const d=gristToDate(p.dateFin); return d && d >= pStart; });
+        fp = fp.filter(p => { const d=gristToDate(p.dateFin); return d && d >= pStart; });
     }
-    if (filters.projets.length)  fp = fp.filter(p => filters.projets.includes(String(p.nom)));
-    if (filters.responsables.length) fp = fp.filter(p => filters.projets.includes(String(p.responsable)));
-    /*if (compFilter && compFilter.field && compFilter.value) {
+    if (filters.projets.length)  fp = fp.filter(p => filters.projets.includes(String(p.id)));
+    if (filters.responsables.length) fp = fp.filter(p => filters.responsables.includes(String(p.responsable)));
+    if (compFilter && compFilter.field && compFilter.value) {
         const {field, value} = compFilter;
-        fp = fp.filter(t => {
-            if (field==='statut')   return getStatus(t)===value;
-            if (field==='priorite') return String(getPriority(t))===String(value);
-            if (field==='projet')   return String(t.projet)===String(value);
-            if (field==='type')     return (t.type||'tache')===value;
+        fp = fp.filter(p => {
+            //if (field==='statut')   return getStatus(t)===value;
+            //if (field==='priorite') return String(getPriority(t))===String(value);
+            if (field==='projet')   return String(p.nom)===String(value);
+            if (field==='responsable')   return String(p.responsable)===String(value);
+            //if (field==='type')     return (t.type||'tache')===value;
             return true;
         });
-    }*/
+    }
     return fp;
 }
 
@@ -1028,6 +1029,10 @@ function renderProjects(comp, fp, ft) {
                     ${renderAssigneeGroup('MOE', moe)}
                     ${renderAssigneeGroup('Techniques', techniques)}
                 </div>
+                <div class="project-progress">
+                    <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
+                    <div class="project-progress-text">${pct}%</div>
+                </div>
                 <div class="project-tasks-table">
                     <table>
                         <thead>
@@ -1040,7 +1045,7 @@ function renderProjects(comp, fp, ft) {
                             </tr>
                         </thead>
                         <tbody>
-                            ${projectTasks.map(t => `
+                            ${projectTasks.sort((a, b) => (a.categorie || '').localeCompare(b.categorie || '')).map(t => `
                                 <tr>
                                     <td>${escapeHtml(t.titre || '')}</td>
                                     <td>${escapeHtml(t.description || '')}</td>
@@ -1052,10 +1057,6 @@ function renderProjects(comp, fp, ft) {
                         </tbody>
                     </table>
                 </div>
-            </div>
-            <div class="project-progress">
-                <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
-                <div class="project-progress-text">${pct}%</div>
             </div>
         </div>`;
     }).join('')}</div>`;
