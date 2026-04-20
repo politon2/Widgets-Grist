@@ -163,8 +163,11 @@
 
         /* ── Projects ── */
         .projects-list { display: flex; flex-direction: column; gap: 10px; }
-        .project-item { display: flex; align-items: center; gap: 9px; }
+        .project-item { display: flex; align-items: stretch; gap: 9px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .project-item:last-child { border-bottom: none; }
         .project-color { width: 3px; height: 36px; border-radius: 2px; flex-shrink: 0; }
+        .project-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+        .project-header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
         .project-info { flex: 1; min-width: 0; }
         .project-name { font-size: 0.9rem; font-weight: 500; }
         .project-stats { font-size: 0.69rem; color: var(--text-muted); }
@@ -174,8 +177,8 @@
         .project-badge { padding: 3px 7px; border-radius: 8px; font-size: 0.65rem; background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 4px; }
         .project-badge-avatars { display: inline-flex; align-items: center; gap: 2px; }
         .project-badge-avatar { width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.62rem; color: white; font-weight: 600; text-transform: uppercase; }
-        .project-progress { width: 85px; flex-shrink: 0; }
-        .project-progress-bar { height: 5px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+        .project-progress { min-width: 100px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-end; }
+        .project-progress-bar { width: 100%; height: 5px; background: var(--bg); border-radius: 3px; overflow: hidden; }
         .project-progress-fill { height: 100%; background: var(--success); border-radius: 3px; }
         .project-progress-text { font-size: 0.67rem; color: var(--text-muted); text-align: right; margin-top: 1px; }
 
@@ -1013,29 +1016,32 @@ function renderProjects(comp, fp, ft) {
         
         return `<div class="project-item">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
-            <div class="project-info">
-                <div class="project-name">${escapeHtml(p.nom)}</div>
-                <div class="project-meta">
-                    ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="project-badge-avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
-                    <span>PRT: ${escapeHtml(p.prt || '—')}</span>
-                    ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
-                    ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}">${escapeHtml(moaName)}</span>` : '<span>—</span>'}
-                    ${budgetTot ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${budgetColor}20;color:${budgetColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(budgetTot)}">${escapeHtml(budgetTot)}</span>` : '<span>—</span>'}
-                    ${budgetAn && budgetTot != 'à définir' ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${budgetColor}20;color:${budgetColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(budgetAn)}">(${escapeHtml(currentYear)} : ${escapeHtml(budgetAn)} - ext : ${escapeHtml(chargeExtAn)})</span>` : '<span>—</span>'}
+            <div class="project-main">
+                <div class="project-header">
+                    <div class="project-info">
+                        <div class="project-name">${escapeHtml(p.nom)}</div>
+                        <div class="project-meta">
+                            ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="project-badge-avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
+                            <span>PRT: ${escapeHtml(p.prt || '—')}</span>
+                            ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
+                            ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}">${escapeHtml(moaName)}</span>` : '<span>—</span>'}
+                            ${budgetTot ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${budgetColor}20;color:${budgetColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(budgetTot)}">${escapeHtml(budgetTot)}</span>` : '<span>—</span>'}
+                            ${budgetAn && budgetTot != 'à définir' ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${budgetColor}20;color:${budgetColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(budgetAn)}">(${escapeHtml(currentYear)} : ${escapeHtml(budgetAn)} - ext : ${escapeHtml(chargeExtAn)})</span>` : '<span>—</span>'}
+                        </div>
+                        <div class="project-badges">
+                            ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
+                            ${renderAssigneeGroup('Architectes', architectes)}
+                            ${renderAssigneeGroup('MOA', moa)}
+                            ${renderAssigneeGroup('MOE', moe)}
+                            ${renderAssigneeGroup('Techniques', techniques)}
+                        </div>
+                    </div>
+                    <div class="project-progress">
+                        <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
+                        <div class="project-progress-text">${pct}%</div>
+                    </div>
                 </div>
-                <div class="project-badges">
-                    ${renderAssigneeGroup('Fonctionnels', fonctionnels)}
-                    ${renderAssigneeGroup('Architectes', architectes)}
-                    ${renderAssigneeGroup('MOA', moa)}
-                    ${renderAssigneeGroup('MOE', moe)}
-                    ${renderAssigneeGroup('Techniques', techniques)}
-                </div>
-                <div class="project-progress">
-                    <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
-                    <div class="project-progress-text">${pct}%</div>
-                </div>
-            </div>
-            <div class="project-tasks-table">
+                <div class="project-tasks-table">
                 <table>
                     <thead>
                         <tr>
