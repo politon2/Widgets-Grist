@@ -728,7 +728,7 @@ function createComp(comp) {
             <button class="btn-icon danger" onclick="removeComponent('${comp.id}',event)" title="Supprimer">×</button>
         </div>` : '';
 
-    //const ft = getFilteredTasks(hasCF ? cf : null);
+    const ft = getFilteredTasks(hasCF ? cf : null);
     const fp = getFilteredProjects(hasCF ? cf : null);
 
     div.innerHTML = `
@@ -738,15 +738,16 @@ function createComp(comp) {
             </div>
             ${editControls}
         </div>
-        <div class="comp-body">${renderCompBody(comp, fp)}</div>`;
+        <div class="comp-body">${renderCompBody(comp, fp, ft)}</div>`;
 
     if (isEditMode) div.addEventListener('click', () => selectComponent(comp.id));
     return div;
 }
 
-function renderCompBody(comp, fp) {
+function renderCompBody(comp, fp, ft) {
     switch (comp.type) {
         case 'kpi':      return renderKPI(comp, fp);
+        case 'projects': return renderProjects(comp, fp, ft);
       /*  case 'donut':    return renderDonut(comp, ft);
         case 'bars':     return renderBars(comp, ft);
         case 'list':     return renderList(comp, ft);
@@ -900,7 +901,7 @@ function renderUpcoming(comp, ft) {
     }).join('')}</div>`;
 }
 
-function renderProjects(comp, ft) {
+function renderProjects(comp, fp, ft) {
     const active = projects.filter(p => p.actif !== false);
     if (!active.length) return '<div class="empty-state"><div class="empty-icon">◧</div><div class="empty-text">Aucun projet actif</div></div>';
 
