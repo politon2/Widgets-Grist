@@ -1013,7 +1013,6 @@ function renderProjects(comp, fp, ft) {
         const currentYear = new Date().getFullYear().toString();
         
         return `<div class="project-item" style="border:1px solid ${p.couleur || '#6366f1'};">
-            <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
             <div class="project-info">
                 <div class="project-name">${escapeHtml(p.nom)}</div>
                 <div class="project-meta">
