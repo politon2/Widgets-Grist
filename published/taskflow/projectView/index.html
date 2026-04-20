@@ -915,8 +915,8 @@ function renderProjects(comp, fp, ft) {
     const byProjTasks = {};
 
     fp.forEach(p => {
-        if (!p.name) return;
-        if (!stats[p.name]) stats[p.name] = { total:0, done:0 };
+        if (!p.id) return;
+        if (!stats[p.id]) stats[p.id] = { total:0, done:0 };
     });
     ft.forEach(t => {
         if (!t.projet) return;
