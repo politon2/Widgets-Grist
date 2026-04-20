@@ -179,6 +179,12 @@
         .project-progress-fill { height: 100%; background: var(--success); border-radius: 3px; }
         .project-progress-text { font-size: 0.67rem; color: var(--text-muted); text-align: right; margin-top: 1px; }
 
+        .project-tasks-table { margin-top: 8px; }
+        .project-tasks-table table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+        .project-tasks-table th, .project-tasks-table td { padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--border); }
+        .project-tasks-table th { background: var(--bg); font-weight: 600; color: var(--text-muted); }
+        .project-tasks-table td { color: var(--text); }
+
         /* ── List ── */
         .list-items { display: flex; flex-direction: column; gap: 3px; }
         .list-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: background 0.1s; }
@@ -1021,6 +1027,30 @@ function renderProjects(comp, fp, ft) {
                     ${renderAssigneeGroup('MOA', moa)}
                     ${renderAssigneeGroup('MOE', moe)}
                     ${renderAssigneeGroup('Techniques', techniques)}
+                </div>
+                <div class="project-tasks-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Titre</th>
+                                <th>Description</th>
+                                <th>Date Début</th>
+                                <th>Date Échéance</th>
+                                <th>Progression</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${projectTasks.map(t => `
+                                <tr>
+                                    <td>${escapeHtml(t.titre || '')}</td>
+                                    <td>${escapeHtml(t.description || '')}</td>
+                                    <td>${t.dateDebut ? gristToDate(t.dateDebut).toLocaleDateString('fr-FR') : ''}</td>
+                                    <td>${t.dateEcheance ? gristToDate(t.dateEcheance).toLocaleDateString('fr-FR') : ''}</td>
+                                    <td>${t.progression || 0}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="project-progress">
