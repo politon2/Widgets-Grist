@@ -1048,17 +1048,17 @@ function renderProjects(comp, fp, ft) {
                         </thead>
                         <tbody>
                             ${projectTasks.sort((a, b) => (a.categorie || '').localeCompare(b.categorie || '')).map(t => {
-                                const prio = parseInt(t.priorite, 10);
-                                const prioClass = prio === 3 ? 'priority-3' : prio === 4 ? 'priority-4' : '';
-                                return `
+                            const prio = parseInt(t.priorite, 10);
+                            const prioClass = prio === 3 ? 'priority-3' : prio === 4 ? 'priority-4' : '';
+                            return `
                                 <tr class="${prioClass}">
                                     <td>${escapeHtml(t.titre || '')}</td>
                                     <td>${escapeHtml(t.description || '')}</td>
                                     <td>${t.dateDebut ? gristToDate(t.dateDebut).toLocaleDateString('fr-FR') : ''}</td>
                                     <td>${t.dateEcheance ? gristToDate(t.dateEcheance).toLocaleDateString('fr-FR') : ''}</td>
                                     <td>${t.progression || 0}%</td>
-                                    </tr>
-                            `).join('')}
+                                </tr>
+                            `}).join('')}
                         </tbody>
                     </table>
                 </div>
