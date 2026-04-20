@@ -326,7 +326,8 @@
 // CATALOGUE & CONFIG
 // ═══════════════════════════════════════════════════════════════════════════════
 const CATALOG = {
-    projects: { label: 'Projets',    icon: '☰', defaultSpan: 1 },
+    kpi:      { label: 'KPI',        icon: '◈', defaultSpan: 1 },
+    projects: { label: 'Projets',    icon: '☰', defaultSpan: 4 },
 };
 
 const CONFIG_FIELDS = {
@@ -352,7 +353,8 @@ const FILTER_FIELDS = [
 ];
 
 const DEFAULT_LAYOUT = [
-    { id:'c1', type:'projects', colSpan:1, title:'Projets',    config:{} }, 
+    { id:'c1', type:'kpi',      colSpan:1, title:'Total',      config:{ metric:'total' } },
+    { id:'c2', type:'projects', colSpan:4, title:'Projets',    config:{} }, 
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -432,6 +434,27 @@ function getFilteredTasks(compFilter) {
         });
     }
     return ft;
+}
+
+function getFilteredProjects(compFilter) {
+    let fp = projects;
+    if (filters.periode !== 'all') {
+        const pStart = getPeriodStart(filters.periode);
+        fp = fp.filter(t => { const d=gristToDate(p.dateFin); return d && d >= pStart; });
+    }
+    if (filters.projets.length)  fp = fp.filter(p => filters.projets.includes(String(p.nom)));
+    if (filters.responsables.length) fp = fp.filter(p => filters.projets.includes(String(p.responsable)));
+    /*if (compFilter && compFilter.field && compFilter.value) {
+        const {field, value} = compFilter;
+        fp = fp.filter(t => {
+            if (field==='statut')   return getStatus(t)===value;
+            if (field==='priorite') return String(getPriority(t))===String(value);
+            if (field==='projet')   return String(t.projet)===String(value);
+            if (field==='type')     return (t.type||'tache')===value;
+            return true;
+        });
+    }*/
+    return fp;
 }
 
 function hasActiveFilters() {
@@ -705,7 +728,8 @@ function createComp(comp) {
             <button class="btn-icon danger" onclick="removeComponent('${comp.id}',event)" title="Supprimer">×</button>
         </div>` : '';
 
-    const ft = getFilteredTasks(hasCF ? cf : null);
+    //const ft = getFilteredTasks(hasCF ? cf : null);
+    const fp = getFilteredProjects(hasCF ? cf : null);
 
     div.innerHTML = `
         <div class="comp-header">
@@ -714,22 +738,22 @@ function createComp(comp) {
             </div>
             ${editControls}
         </div>
-        <div class="comp-body">${renderCompBody(comp, ft)}</div>`;
+        <div class="comp-body">${renderCompBody(comp, fp)}</div>`;
 
     if (isEditMode) div.addEventListener('click', () => selectComponent(comp.id));
     return div;
 }
 
-function renderCompBody(comp, ft) {
+function renderCompBody(comp, fp) {
     switch (comp.type) {
-        case 'kpi':      return renderKPI(comp, ft);
-        case 'donut':    return renderDonut(comp, ft);
+        case 'kpi':      return renderKPI(comp, fp);
+      /*  case 'donut':    return renderDonut(comp, ft);
         case 'bars':     return renderBars(comp, ft);
         case 'list':     return renderList(comp, ft);
         case 'workload': return renderWorkload(comp, ft);
         case 'upcoming': return renderUpcoming(comp, ft);
         case 'projects': return renderProjects(comp, ft);
-        case 'velocity': return renderVelocity(comp, ft);
+        case 'velocity': return renderVelocity(comp, ft);*/
         default: return '<div class="empty-state"><div class="empty-text">Type inconnu</div></div>';
     }
 }
@@ -737,18 +761,13 @@ function renderCompBody(comp, ft) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // RENDERERS
 // ═══════════════════════════════════════════════════════════════════════════════
-function renderKPI(comp, ft) {
+function renderKPI(comp, fp) {
     const metric = comp.config.metric || 'total';
     const today = new Date(); today.setHours(0,0,0,0);
     const weekStart = startOfWeek(today);
     let value = 0, label = '';
     switch (metric) {
-        case 'total':     value = ft.length;                                                                            label = 'tâches au total'; break;
-        case 'inprogress':value = ft.filter(t=>getStatus(t)!=='done').length;                                           label = 'tâches actives'; break;
-        case 'done':      value = ft.filter(t=>getStatus(t)==='done').length;                                           label = 'tâches terminées'; break;
-        case 'done_week': value = ft.filter(t=>getStatus(t)==='done' && gristToDate(t.dateEcheance)>=weekStart).length; label = 'terminées cette semaine'; break;
-        case 'late':      value = ft.filter(t=>{ const d=gristToDate(t.dateEcheance); return d&&d<today&&getStatus(t)!=='done'; }).length; label = 'en retard'; break;
-        case 'rate':      { const done=ft.filter(t=>getStatus(t)==='done').length; value=ft.length?Math.round(done/ft.length*100):0; label='% complété'; break; }
+        case 'total':     value = fp.length;  label = 'projets au total'; break;
     }
     const cls = { total:'kpi-total', inprogress:'kpi-inprogress', done:'kpi-done', done_week:'kpi-done_week', late:'kpi-late', rate:'kpi-rate' }[metric]||'';
     const lateClass = metric==='late'&&value>0 ? 'kpi-late-border' : '';
