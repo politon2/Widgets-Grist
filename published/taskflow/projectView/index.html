@@ -920,9 +920,14 @@ function renderProjects(comp, fp, ft) {
     const stats = {};
     const byProjTasks = {};
 
+    fp.forEach(p => {
+        if (!p.name) return;
+        if (!stats[p.name]) stats[p.name] = { total:0, done:0 };
+    });
+
     ft.forEach(t => {
         if (!t.projet) return;
-        if (!stats[t.projet]) stats[t.projet] = { total:0, done:0 };
+        if (!stats[t.projet]) stats[t.projet] = { total:0, done:0 }; //inutile vu l'initialisation précédente à priori
         if (!byProjTasks[t.projet]) byProjTasks[t.projet] = [];
         byProjTasks[t.projet].push(t);
 
