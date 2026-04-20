@@ -1034,7 +1034,7 @@ function renderProjects(comp, fp, ft) {
                     <div class="project-progress-bar"><div class="project-progress-fill" style="width:${pct}%"></div></div>
                     <div class="project-progress-text">${pct}%</div>
                 </div>
-                <div class="project-tasks-table">
+                ${projectTasks.length ? `<div class="project-tasks-table">
                     <table>
                         <thead>
                             <tr>
@@ -1060,7 +1060,7 @@ function renderProjects(comp, fp, ft) {
                             `}).join('')}
                         </tbody>
                     </table>
-                </div>
+                </div>` : ''}
             </div>
         </div>`;
     }).join('')}</div>`;
