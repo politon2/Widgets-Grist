@@ -163,7 +163,7 @@
 
         /* ── Projects ── */
         .projects-list { display: flex; flex-direction: column; gap: 10px; }
-        .project-item { display: flex; align-items: center; gap: 9px; }
+        .project-item { display: flex; align-items: center; gap: 9px; border-radius: 12px; padding: 10px; }
         .project-color { width: 3px; height: 36px; border-radius: 2px; flex-shrink: 0; }
         .project-info { flex: 1; min-width: 0; }
         .project-name { font-size: 0.8rem; font-weight: 700; }
@@ -1012,7 +1012,7 @@ function renderProjects(comp, fp, ft) {
         const chargeExtAn = p.charge_ext_an ? parseFloat(p.charge_ext_an).toLocaleString() + ' jH' : '0 jH';
         const currentYear = new Date().getFullYear().toString();
         
-        return `<div class="project-item">
+        return `<div class="project-item" style="border:1px solid ${p.couleur || '#6366f1'};">
             <div class="project-color" style="background:${p.couleur || '#6366f1'}"></div>
             <div class="project-info">
                 <div class="project-name">${escapeHtml(p.nom)}</div>
