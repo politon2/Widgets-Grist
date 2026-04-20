@@ -139,6 +139,10 @@ body { display: flex; flex-direction: column; background: var(--bg); }
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Calendrier
   </button>
+  <button class="tab" data-id="projectView"   onclick="go('projectView')"  >
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Vue Projet
+  </button>
   <button class="tab" data-id="whiteboard" onclick="go('whiteboard')">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"/><line x1="3" y1="20" x2="21" y2="20"/><line x1="8" y1="17" x2="8" y2="20"/><line x1="16" y1="17" x2="16" y2="20"/></svg>
     Whiteboard
@@ -156,6 +160,7 @@ const URLS = {
   kanban:     BASE + 'kanban/?shell=1',
   gantt:      BASE + 'gantt/?shell=1',
   calendar:   BASE + 'calendar/?shell=1',
+  projectView: BASE + 'projectView/?shell=1',
   whiteboard: BASE + 'whiteboard/?shell=1',
 };
 
@@ -163,7 +168,7 @@ const frame    = document.getElementById('frame');
 const loadBar  = document.getElementById('loadBar');
 const skeleton = document.getElementById('skeleton');
 const skLabel  = document.getElementById('skLabel');
-const LABELS   = { dashboard:'Dashboard', kanban:'Kanban', gantt:'Gantt', calendar:'Calendar', whiteboard:'Whiteboard' };
+const LABELS   = { dashboard:'Dashboard', kanban:'Kanban', gantt:'Gantt', calendar:'Calendar', projectView:'ProjectView', whiteboard:'Whiteboard' };
 let current    = null;
 
 // ── Transparent Grist relay ───────────────────────────────────────
