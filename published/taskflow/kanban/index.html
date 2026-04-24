@@ -640,7 +640,8 @@
                 }
                 return cols;
             } else if (groupBy === 'division') {
-                const cols = [...new Set(projects.map(p => p.division).filter(d => d))].map(divisionId => {
+                const filteredProjects = filters.project.length ? projects.filter(p => filters.project.includes(p.id)) : projects;
+                const cols = [...new Set(filteredProjects.map(p => p.division).filter(d => d))].map(divisionId => {
                     const divisionName = getDivisionName(divisionId);
                     const divisionColor = getDivisionColor(divisionId);
                     return {
@@ -649,8 +650,11 @@
                         icon: `<span style="color:${divisionColor}">●</span>`,
                         tasks: ft.filter(t => getProjectDivision(t.projet) == divisionId)
                     };
-                });
-                cols.push({ key: 'none', label: 'Sans division', icon: '', tasks: ft.filter(t => !getProjectDivision(t.projet)) });
+                }).filter(col => !filters.project.length || col.tasks.length);
+                const noDivisionTasks = ft.filter(t => !getProjectDivision(t.projet));
+                if (noDivisionTasks.length) {
+                    cols.push({ key: 'none', label: 'Sans division', icon: '', tasks: noDivisionTasks });
+                }
                 return cols;
             }
             return [];
