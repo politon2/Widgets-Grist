@@ -589,7 +589,7 @@
                 if (filters.status.length && !filters.status.includes(t.statut || 'todo')) return false;
                 if (searchQuery && !(t.titre||'').toLowerCase().includes(searchQuery)) return false;
                 return true;
-            });
+            }).sort((a, b) => (a.titre || '').localeCompare((b.titre || '')));
         }
 
         // ═══════════════════════════════════════════════════════════════════════
