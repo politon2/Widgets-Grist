@@ -559,8 +559,14 @@
             } else if (groupBy === 'priorite') {
                 return [1,2,3,4].map(p => ({ key: String(p), label: PRIORITY_LABELS[p], icon: '', tasks: ft.filter(t => getPriority(t) === p) }));
             } else if (groupBy === 'projet') {
-                const cols = projects.filter(p => p.actif !== false).map(p => ({ key: String(p.id), label: p.nom, icon: `<span style="color:${p.couleur}">●</span>`, tasks: ft.filter(t => t.projet === p.id) }));
-                cols.push({ key: 'none', label: 'Sans projet', icon: '', tasks: ft.filter(t => !t.projet) });
+                const cols = projects
+                    .filter(p => p.actif !== false && (!filters.project.length || filters.project.includes(p.id)))
+                    .map(p => ({ key: String(p.id), label: p.nom, icon: `<span style="color:${p.couleur}">●</span>`, tasks: ft.filter(t => t.projet === p.id) }))
+                    .filter(col => !filters.project.length || col.tasks.length);
+                const noProjectTasks = ft.filter(t => !t.projet);
+                if (noProjectTasks.length) {
+                    cols.push({ key: 'none', label: 'Sans projet', icon: '', tasks: noProjectTasks });
+                }
                 return cols;
             }
             return [];
