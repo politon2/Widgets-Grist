@@ -500,7 +500,7 @@
                 <div class="filter-menu" id="filterDivisionMenu"></div>
             </div>
             <!--<div class="filter-dropdown">
-                <div class="filter-btn" id="filterPriorityBtn" onclick="toggleFilterMenu('priority')">Priorités ▾</div>
+                <div class="filter-btn" id="filterPriorityBtn" onclick="toggleFilterMenu('priority')">Visibilités ▾</div>
                 <div class="filter-menu" id="filterPriorityMenu"></div>
             </div>-->
             <div class="filter-dropdown">
@@ -551,7 +551,6 @@
         <div class="legend-item"><div class="legend-color" style="background:var(--danger)"></div>Critique</div>
         <div class="legend-item"><div class="legend-color" style="background:var(--warning)"></div>Haute</div>
         <div class="legend-item"><div class="legend-color" style="background:var(--info)"></div>Moyenne</div>
-        <div class="legend-item"><div class="legend-color" style="background:var(--text-muted)"></div>Basse</div>
         <div class="legend-item"><span style="color:var(--text)">◆</span>Jalon</div>
     </div>
 
@@ -570,7 +569,7 @@
             Tasks: [{ id: 'titre', type: 'Text' }, { id: 'description', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateEcheance', type: 'Date' }, { id: 'priorite', type: 'Choice' }, { id: 'statut', type: 'Choice' }, { id: 'progression', type: 'Numeric' }, { id: 'projet', type: 'Ref:Projects' }, { id: 'assignees', type: 'RefList:Team' }, { id: 'type', type: 'Choice' }, { id: 'categorie', type: 'Choice' }, { id: 'dependDe', type: 'RefList:Tasks' }, { id: 'tags', type: 'ChoiceList' }, { id: 'estimationH', type: 'Numeric' }, { id: 'tempsPasse', type: 'Numeric' }, { id: 'dds', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'subtasks', type: 'Text' }]  // FUT-01: subtasks en JSON
         };
 
-        const PRIORITY_LABELS = { 1: 'Critique', 2: 'Haute', 3: 'Moyenne', 4: 'Basse' };
+        const PRIORITY_LABELS = { 1: 'Critique', 2: 'Haute', 3: 'Moyenne'};
         const PRIORITY_COLORS = { 1: '#ef4444', 2: '#f59e0b', 3: '#3b82f6', 4: '#64748b' };
         const STATUS_LABELS = { todo: 'À faire', inprogress: 'En cours', review: 'En revue', done: 'Terminé' };
         const COLOR_PRESETS = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#64748b', '#94a3b8'];
@@ -1833,12 +1832,11 @@
                     </div>
                     ${data.type !== 'reunion' ? `
                     <div class="prop-row">
-                        <span class="prop-label">Priorité</span>
+                        <span class="prop-label">Visibilité</span>
                         <div class="prop-value"><div class="priority-selector">
                             <div class="priority-pill p1 ${data.priorite == '1' ? 'selected' : ''}" onclick="updateField('priorite','1')">Critique</div>
                             <div class="priority-pill p2 ${data.priorite == '2' ? 'selected' : ''}" onclick="updateField('priorite','2')">Haute</div>
                             <div class="priority-pill p3 ${data.priorite == '3' ? 'selected' : ''}" onclick="updateField('priorite','3')">Moyenne</div>
-                            <div class="priority-pill p4 ${data.priorite == '4' ? 'selected' : ''}" onclick="updateField('priorite','4')">Basse</div>
                         </div></div>
                     </div>` : ''}
                     <div class="prop-row">

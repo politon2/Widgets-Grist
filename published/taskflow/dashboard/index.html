@@ -338,8 +338,8 @@ const CATALOG = {
 
 const CONFIG_FIELDS = {
     kpi:      [{ key:'metric',  label:'Métrique',     options:[['total','Total tâches'],['inprogress','En cours'],['done','Terminées (tout)'],['done_week','Terminées ce sem.'],['late','En retard'],['rate','Taux de complétion %']] }],
-    donut:    [{ key:'groupBy', label:'Grouper par',  options:[['statut','Statut'],['priorite','Priorité'],['projet','Projet'],['type','Type']] }],
-    bars:     [{ key:'groupBy', label:'Grouper par',  options:[['statut','Statut'],['priorite','Priorité'],['projet','Projet'],['type','Type'],['assignee','Assigné']] }],
+    donut:    [{ key:'groupBy', label:'Grouper par',  options:[['statut','Statut'],['priorite','Visibilité'],['projet','Projet'],['type','Type']] }],
+    bars:     [{ key:'groupBy', label:'Grouper par',  options:[['statut','Statut'],['priorite','Visibilité'],['projet','Projet'],['type','Type'],['assignee','Assigné']] }],
     list:     [
         { key:'preset', label:'Preset',  options:[['all','Toutes'],['overdue','En retard'],['today',"Auj."],['upcoming','À venir 14j'],['inprogress','En cours']] },
         { key:'limit',  label:'Limite',  options:[['5','5'],['10','10'],['20','20']] },
@@ -353,7 +353,7 @@ const CONFIG_FIELDS = {
 const FILTER_FIELDS = [
     ['', '— Aucun filtre —'],
     ['statut',   'Statut'],
-    ['priorite', 'Priorité'],
+    ['priorite', 'Visibilité'],
     ['projet',   'Projet'],
     ['type',     'Type'],
 ];
@@ -364,7 +364,7 @@ const DEFAULT_LAYOUT = [
     { id:'c3', type:'kpi',      colSpan:1, title:'Terminées',  config:{ metric:'done' } },
     { id:'c4', type:'kpi',      colSpan:1, title:'En retard',  config:{ metric:'late' } },
     { id:'c5', type:'donut',    colSpan:2, title:'Par statut', config:{ groupBy:'statut' } },
-    { id:'c6', type:'bars',     colSpan:2, title:'Par priorité', config:{ groupBy:'priorite' } },
+    { id:'c6', type:'bars',     colSpan:2, title:'Par Visibilité', config:{ groupBy:'priorite' } },
     { id:'c7', type:'projects', colSpan:2, title:'Projets',    config:{} },
     { id:'c8', type:'workload', colSpan:2, title:'Equipe', config:{ horizon:20 } },
     { id:'c9', type:'upcoming', colSpan:2, title:'Échéances',  config:{ horizon:14 } },
@@ -384,7 +384,7 @@ let filterPanelOpen = false;
 
 const STATUS_LABELS  = { todo:'À faire', inprogress:'En cours', review:'En revue', done:'Terminé' };
 const STATUS_COLORS  = { todo:'#64748b', inprogress:'#3b82f6', review:'#f59e0b', done:'#10b981' };
-const PRIORITY_LABELS = { 1:'Critique', 2:'Haute', 3:'Moyenne', 4:'Basse' };
+const PRIORITY_LABELS = { 1:'Staff', 2:'Division', 3:'Projet' };
 const PRIORITY_COLORS = { 1:'#ef4444', 2:'#f59e0b', 3:'#3b82f6', 4:'#64748b' };
 const MONTHS_SHORT = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
 let _compIdCounter = 100;
@@ -784,7 +784,7 @@ function groupByField(ft, field) {
         if (key!==undefined) counts[key]=(counts[key]||0)+1;
     });
     if (field==='statut')   return Object.entries(STATUS_LABELS).map(([k,l])=>({ key:k, label:l, count:counts[k]||0, color:STATUS_COLORS[k] }));
-    if (field==='priorite') return [1,2,3,4].map(k=>({ key:String(k), label:PRIORITY_LABELS[k], count:counts[String(k)]||0, color:PRIORITY_COLORS[k] }));
+    if (field==='priorite') return [1,2,3].map(k=>({ key:String(k), label:PRIORITY_LABELS[k], count:counts[String(k)]||0, color:PRIORITY_COLORS[k] }));
     if (field==='projet')   return projects.filter(p=>counts[String(p.id)]).map(p=>({ key:String(p.id), label:p.nom, count:counts[String(p.id)]||0, color:p.couleur||'#6366f1' }));
     if (field==='type')     return [['tache','Tâche','#3b82f6'],['jalon','Jalon','#f59e0b'],['reunion','Réunion','#10b981']].map(([k,l,c])=>({ key:k, label:l, count:counts[k]||0, color:c }));
     if (field==='assignee') return team.filter(m=>counts[String(m.id)]).map(m=>({ key:String(m.id), label:(m.nom||'?').split(' ')[0], count:counts[String(m.id)]||0, color:m.couleur||'#4f46e5' }));

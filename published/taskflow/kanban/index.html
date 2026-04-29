@@ -567,7 +567,7 @@
                 const divisionName = getDivisionName(divisionId);
                 return `<div class="filter-option" onclick="toggleFilterValue('division', ${divisionId})"><input type="checkbox" ${filters.division.includes(divisionId) ? 'checked' : ''}>${escapeHtml(divisionName)}</div>`;
             }).join('') || '<div class="filter-option">Aucun</div>';
-            document.getElementById('filterPriorityMenu').innerHTML = [1,2,3,4].map(p => `<div class="filter-option" onclick="toggleFilterValue('priority', ${p})"><input type="checkbox" ${filters.priority.includes(p) ? 'checked' : ''}><span style="color:${PRIORITY_COLORS[p]}">●</span> ${PRIORITY_LABELS[p]}</div>`).join('');
+            document.getElementById('filterPriorityMenu').innerHTML = [1,2,3].map(p => `<div class="filter-option" onclick="toggleFilterValue('priority', ${p})"><input type="checkbox" ${filters.priority.includes(p) ? 'checked' : ''}><span style="color:${PRIORITY_COLORS[p]}">●</span> ${PRIORITY_LABELS[p]}</div>`).join('');
             document.getElementById('filterAssigneeMenu').innerHTML = team.filter(m => m.actif !== false).map(m => `<div class="filter-option" onclick="toggleFilterValue('assignee', ${m.id})"><input type="checkbox" ${filters.assignee.includes(m.id) ? 'checked' : ''}>${escapeHtml(m.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
             // KAN-01: Filtre par statut
             document.getElementById('filterStatusMenu').innerHTML = Object.entries(STATUS_LABELS).map(([key, label]) => `<div class="filter-option" onclick="toggleFilterValue('status', '${key}')"><input type="checkbox" ${filters.status.includes(key) ? 'checked' : ''}>${label}</div>`).join('');
