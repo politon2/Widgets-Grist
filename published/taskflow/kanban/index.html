@@ -354,7 +354,7 @@
             <span style="font-size:0.8rem;color:var(--text-muted)">Grouper par :</span>
             <div class="group-selector">
                 <button class="btn" onclick="setGroupBy('statut')" id="groupStatut">Statut</button>
-                <button class="btn" onclick="setGroupBy('priorite')" id="groupPriorite">Priorité</button>
+                <button class="btn" onclick="setGroupBy('priorite')" id="groupPriorite">Visibilité</button>
                 <button class="btn active" onclick="setGroupBy('projet')" id="groupProjet">Projet</button>
                 <button class="btn" onclick="setGroupBy('division')" id="groupDivision">Division</button>
             </div>
@@ -369,7 +369,7 @@
                 <div class="filter-menu" id="filterDivisionMenu"></div>
             </div>
             <div class="filter-dropdown">
-                <div class="filter-btn" id="filterPriorityBtn" onclick="toggleFilterMenu('priority')">Priorités ▾</div>
+                <div class="filter-btn" id="filterPriorityBtn" onclick="toggleFilterMenu('priority')">Visibilités ▾</div>
                 <div class="filter-menu" id="filterPriorityMenu"></div>
             </div>
             <div class="filter-dropdown">
@@ -424,7 +424,7 @@
             Projects: [{ id: 'nom', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateFin', type: 'Date' }, { id: 'responsable', type: 'Ref:Team' }, { id: 'actif', type: 'Bool' }, { id: 'prt', type: 'Text' }, { id: 'moa', type: 'RefList:Moa' }, { id: 'division', type: 'Ref:Divisions' }, { id: 'budget_FIR', type: 'Numeric' }, { id: 'fabricants', type: 'Text' }, { id: 'commentaire', type: 'Text' }],
             Tasks: [{ id: 'titre', type: 'Text' }, { id: 'description', type: 'Text' }, { id: 'dateDebut', type: 'Date' }, { id: 'dateEcheance', type: 'Date' }, { id: 'priorite', type: 'Choice' }, { id: 'statut', type: 'Choice' }, { id: 'progression', type: 'Numeric' }, { id: 'projet', type: 'Ref:Projects' }, { id: 'assignees', type: 'RefList:Team' }, { id: 'type', type: 'Choice' }, { id: 'categorie', type: 'Choice' }, { id: 'dependDe', type: 'RefList:Tasks' }, { id: 'tags', type: 'ChoiceList' }, { id: 'estimationH', type: 'Numeric' }, { id: 'tempsPasse', type: 'Numeric' }, { id: 'dds', type: 'Text' }, { id: 'couleur', type: 'Text' }, { id: 'subtasks', type: 'Text' }]  // FUT-01: subtasks en JSON
         };
-        const PRIORITY_LABELS = { 1: 'Critique', 2: 'Haute', 3: 'Moyenne', 4: 'Basse' };
+        const PRIORITY_LABELS = { 1: 'Staff', 2: 'Division', 3: 'Projet' };
         const PRIORITY_COLORS = { 1: '#ef4444', 2: '#f59e0b', 3: '#3b82f6', 4: '#64748b' };
         // A15: Palette de couleurs prédéfinies pour les membres d'équipe
         const COLOR_PRESETS = ['#3e5de7','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'];
@@ -899,12 +899,11 @@
                     </div>
                     ${data.type !== 'reunion' ? `
                     <div class="prop-row">
-                        <span class="prop-label">Priorité</span>
+                        <span class="prop-label">Visibilité</span>
                         <div class="prop-value"><div class="priority-selector">
-                            <div class="priority-pill p1 ${data.priorite == '1' ? 'selected' : ''}" onclick="updateField('priorite','1')">Critique</div>
-                            <div class="priority-pill p2 ${data.priorite == '2' ? 'selected' : ''}" onclick="updateField('priorite','2')">Haute</div>
-                            <div class="priority-pill p3 ${data.priorite == '3' ? 'selected' : ''}" onclick="updateField('priorite','3')">Moyenne</div>
-                            <div class="priority-pill p4 ${data.priorite == '4' ? 'selected' : ''}" onclick="updateField('priorite','4')">Basse</div>
+                            <div class="priority-pill p1 ${data.priorite == '1' ? 'selected' : ''}" onclick="updateField('priorite','1')">Staff</div>
+                            <div class="priority-pill p2 ${data.priorite == '2' ? 'selected' : ''}" onclick="updateField('priorite','2')">Division</div>
+                            <div class="priority-pill p3 ${data.priorite == '3' ? 'selected' : ''}" onclick="updateField('priorite','3')">Projet</div>
                         </div></div>
                     </div>` : ''}
                     <div class="prop-row">
