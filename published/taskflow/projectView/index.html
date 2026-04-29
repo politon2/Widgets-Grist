@@ -938,10 +938,12 @@ function renderProjects(comp, fp, ft) {
         return member ? (member.couleur || '#64748b') : '#64748b';
     };
 
+    const getRefListArray = (val) => { if (!val) return []; if (Array.isArray(val)) return val[0] === 'L' ? val.slice(1).map(Number).filter(n => !isNaN(n)) : val.map(Number).filter(n => !isNaN(n)); return []; };
+
     const getMoaName = id => {
         if (!moa || !Array.isArray(moa)) return '';
         const m = moa.find(x => String(x.id) === String(id));
-        return m ? m.nom : 'titi' ;
+        return m ? m.nom : '' ;
     };
 
     const getMoaColor = id => {
@@ -1000,8 +1002,7 @@ function renderProjects(comp, fp, ft) {
         const techniques = getAssigneesByCategory(projectTasks, 'Technique');
 
         const responsableName = getMemberName(p.responsable);
-        const moaName = getMoaName(p.moa);
-        const moaColor = getMoaColor(p.moa);
+        const moaIds = getRefListArray(p.moa);
         const divisionName = getDivisionName(p.division);
         const divisionColor = getDivisionColor(p.division);
         const responsableColor = getMemberColor(p.responsable);
@@ -1019,7 +1020,11 @@ function renderProjects(comp, fp, ft) {
                     ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="project-badge-avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
                     <span>PRT: ${escapeHtml(p.prt || '—')}</span>
                     ${divisionName ? `<span style="background:${divisionColor}20;color:${divisionColor};padding:2px 6px;border-radius:3px">${escapeHtml(divisionName)}</span>` : '<span>—</span>'}
-                    ${moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}">${escapeHtml(moaName)}</span>` : '<span>—</span>'}
+                    ${moaIds.length ? moaIds.map(id => {
+                        const moaName = getMoaName(id);
+                        const moaColor = getMoaColor(id);
+                        return moaName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${moaColor}20;color:${moaColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(moaName)}">${escapeHtml(moaName)}</span>` : '';
+                    }).join('') : '<span>—</span>'}
                     ${budgetTot ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${budgetColor}20;color:${budgetColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(budgetTot)}">${escapeHtml(budgetTot)}</span>` : '<span>—</span>'}
                     ${budgetAn && budgetTot != 'à définir' ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${budgetColor}20;color:${budgetColor};padding:2px 6px;border-radius:3px" title="${escapeHtml(budgetAn)}">(${escapeHtml(currentYear)} : ${escapeHtml(budgetAn)} - ext : ${escapeHtml(chargeExtAn)})</span>` : '<span>—</span>'}
                 </div>
