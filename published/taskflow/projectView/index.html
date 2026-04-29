@@ -373,12 +373,12 @@ let gristReady = false;
 let isEditMode = false;
 let selectedCompId = null;
 let dashConfig = { layout: DEFAULT_LAYOUT.map(c => ({...c, config:{...c.config}})) };
-let filters = { periode: 'all', projets: [], responsables: [], assignes: [], statuts: [] };
+let filters = { periode: 'all', projets: [], responsables: [], assignes: [], statuts: [], priorities: [] };
 let filterPanelOpen = false;
 
 const STATUS_LABELS  = { todo:'À faire', inprogress:'En cours', review:'En revue', done:'Terminé' };
 const STATUS_COLORS  = { todo:'#64748b', inprogress:'#3b82f6', review:'#f59e0b', done:'#10b981' };
-const PRIORITY_LABELS = { 1:'Critique', 2:'Haute', 3:'Moyenne' };
+const PRIORITY_LABELS = { 1:'Staff', 2:'Division', 3:'Proijet' };
 const PRIORITY_COLORS = { 1:'#ef4444', 2:'#f59e0b', 3:'#3b82f6', 4:'#64748b' };
 const MONTHS_SHORT = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
 let _compIdCounter = 100;
@@ -431,6 +431,8 @@ function getFilteredTasks(compFilter) {
     });
     if (filters.assignes.length) ft = ft.filter(t => getAssigneesArray(t).some(a => filters.assignes.includes(String(a))));
     if (filters.statuts.length)  ft = ft.filter(t => filters.statuts.includes(getStatus(t)));
+    if (filters.priorities.length)  ft = ft.filter(t => filters.priorities.includes(getPriority(t)));
+    
     if (compFilter && compFilter.field && compFilter.value) {
         const {field, value} = compFilter;
         ft = ft.filter(t => {
@@ -471,8 +473,9 @@ function toggleFilterProjet(id) { const s=String(id); filters.projets=filters.pr
 function toggleFilterResponsable(id) { const s=String(id); filters.responsables=filters.responsables.includes(s)?filters.responsables.filter(x=>x!==s):[...filters.responsables,s]; render(); }
 function toggleFilterAssigne(id) { const s=String(id); filters.assignes=filters.assignes.includes(s)?filters.assignes.filter(x=>x!==s):[...filters.assignes,s]; render(); }
 function toggleFilterStatut(v)  { filters.statuts=filters.statuts.includes(v)?filters.statuts.filter(x=>x!==v):[...filters.statuts,v]; render(); }
+function toggleFilterPriority(v)  { filters.priorities=filters.priorities.includes(v)?filters.priorities.filter(x=>x!==v):[...filters.priorities,v]; render(); }
 function setPeriode(p)           { filters.periode=p; render(); }
-function clearFilters()          { filters={periode:'all',projets:[],responsables:[],assignes:[],statuts:[]}; render(); }
+function clearFilters()          { filters={periode:'all',projets:[],responsables:[],assignes:[],statuts:[],priorities:[]}; render(); }
 
 function toggleFilterPanel() {
     filterPanelOpen = !filterPanelOpen;
@@ -523,6 +526,13 @@ function renderFilterPanel() {
                 ${Object.entries(STATUS_LABELS).map(([v,l]) => `<span class="filter-check ${filters.statuts.includes(v)?'active':''}" onclick="toggleFilterStatut('${v}')">${l}</span>`).join('')}
             </div>
         </div>`;
+    html += `
+        <div class="filter-section">
+            <div class="filter-section-label">Visibilité</div>
+            <div class="filter-checkboxes">
+                ${Object.entries(PRIORITY_LABELS).map(([v,l]) => `<span class="filter-check ${filters.priorities.includes(v)?'active':''}" onclick="toggleFilterPriority('${v}')">${l}</span>`).join('')}
+            </div>
+        </div>`;
     if (hasActiveFilters()) html += `<div class="filter-section" style="justify-content:flex-end"><button class="filter-clear" onclick="clearFilters()">Réinitialiser</button></div>`;
     document.getElementById('filterPanel').innerHTML = html;
 }
@@ -547,6 +557,9 @@ function renderFilterChips() {
     });
     filters.statuts.forEach(v => {
         html += `<span class="filter-chip">${STATUS_LABELS[v]}<button onclick="toggleFilterStatut('${v}')">×</button></span>`;
+    });
+    filters.priorities.forEach(v => {
+        html += `<span class="filter-chip">${PRIORITY_LABELS[v]}<button onclick="toggleFilterPriority('${v}')">×</button></span>`;
     });
     document.getElementById('headerFilters').innerHTML = html;
 }
