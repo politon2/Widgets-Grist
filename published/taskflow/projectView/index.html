@@ -431,7 +431,7 @@ function getFilteredTasks(compFilter) {
     });
     if (filters.assignes.length) ft = ft.filter(t => getAssigneesArray(t).some(a => filters.assignes.includes(String(a))));
     if (filters.statuts.length)  ft = ft.filter(t => filters.statuts.includes(getStatus(t)));
-    if (filters.priorities.length)  ft = ft.filter(t => filters.priorities.includes(getPriority(t)));
+    if (filters.priorities.length)  ft = ft.filter(t => filters.priorities.includes(String(getPriority(t))));
     
     if (compFilter && compFilter.field && compFilter.value) {
         const {field, value} = compFilter;
