@@ -385,7 +385,7 @@
             <h1><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/><rect x="3" y="4" width="8" height="4" rx="1" fill="currentColor" stroke="none"/><rect x="8" y="10" width="10" height="4" rx="1" fill="currentColor" stroke="none"/><rect x="5" y="16" width="6" height="4" rx="1" fill="currentColor" stroke="none"/></svg> Gantt</h1>
             <div class="sort-selector">
                 <select id="sortSelect" onchange="changeSortMode(this.value)">
-                    <option value="priority">Tri: Priorité</option>
+                    <option value="priority">Tri: Visibilité</option>
                     <option value="date">Tri: Date</option>
                     <option value="manual">Tri: Manuel</option>
                 </select>
@@ -460,7 +460,7 @@
                 <div class="legend-item"><div class="legend-color" style="background:var(--danger)"></div>Critique</div>
                 <div class="legend-item"><div class="legend-color" style="background:var(--warning)"></div>Haute</div>
                 <div class="legend-item"><div class="legend-color" style="background:var(--info)"></div>Moyenne</div>
-                <div class="legend-item"><div class="legend-color" style="background:var(--text-muted)"></div>Basse</div>
+                <!--<div class="legend-item"><div class="legend-color" style="background:var(--text-muted)"></div>Basse</div>-->
                 <div class="legend-separator"></div>
                 <div class="legend-item"><div class="legend-milestone"></div>Jalon</div>
             </div>
@@ -489,11 +489,11 @@
             semester: { label: 'Semestre',  unit: 'week',  weeks: 26,  cellWidth: 32, navStep: 'semester' },
             year:     { label: 'Année',     unit: 'month', months: 12, cellWidth: 80, navStep: 'year' }
         };
-        const PRIORITY_LABELS = { 1: 'Critique', 2: 'Haute', 3: 'Moyenne', 4: 'Basse' };
+        const PRIORITY_LABELS = { 1: 'Critique', 2: 'Haute', 3: 'Moyenne' };
         
         // Configuration des champs affichés dans le tooltip (personnalisable)
         const TOOLTIP_FIELDS = [
-            { key: 'priorite', label: 'Priorité', format: (t) => PRIORITY_LABELS[getTaskPriority(t)] },
+            { key: 'priorite', label: 'Visibilité', format: (t) => PRIORITY_LABELS[getTaskPriority(t)] },
             { key: 'dates', label: 'Dates', format: (t) => formatDateShort(gristToDate(t.dateDebut)) + ' → ' + formatDateShort(gristToDate(t.dateEcheance)) },
             { key: 'projet', label: 'Projet', format: (t) => t.projet ? getProjectName(t.projet) : null },
             { key: 'progression', label: 'Progression', format: (t) => (t.progression || 0) + '%' },
@@ -1441,12 +1441,11 @@
                     </div>
                     ${data.type !== 'reunion' ? `
                     <div class="prop-row">
-                        <span class="prop-label">Priorité</span>
+                        <span class="prop-label">Visibilité</span>
                         <div class="prop-value"><div class="priority-selector">
                             <div class="priority-pill p1 ${data.priorite == '1' ? 'selected' : ''}" onclick="updateField('priorite','1')">Critique</div>
                             <div class="priority-pill p2 ${data.priorite == '2' ? 'selected' : ''}" onclick="updateField('priorite','2')">Haute</div>
                             <div class="priority-pill p3 ${data.priorite == '3' ? 'selected' : ''}" onclick="updateField('priorite','3')">Moyenne</div>
-                            <div class="priority-pill p4 ${data.priorite == '4' ? 'selected' : ''}" onclick="updateField('priorite','4')">Basse</div>
                         </div></div>
                     </div>` : ''}
                     <div class="prop-row">
