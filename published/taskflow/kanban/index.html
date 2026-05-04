@@ -1209,6 +1209,12 @@
             try {
                 await grist.ready({ requiredAccess: 'full' });
                 await ensureSchema();
+                // Lire les paramètres d'URL pour pré-filtrer
+                const urlParams = new URLSearchParams(window.location.search);
+                const projectParam = urlParams.get('project');
+                if (projectParam) {
+                    filters.project = [projectParam];
+                }
                 await loadAllData();
                 grist.onRecords(async () => await loadAllData());
                 grist.onRecord((rec) => { if (rec?.id && rec.id !== selectedTaskId) { selectedTaskId = rec.id; render(); } });

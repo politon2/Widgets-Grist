@@ -166,7 +166,7 @@
         .project-item { display: flex; align-items: center; gap: 9px; border-radius: 12px; padding: 10px; }
         .project-color { width: 3px; height: 36px; border-radius: 2px; flex-shrink: 0; }
         .project-info { flex: 1; min-width: 0; }
-        .project-name { font-size: 0.8rem; font-weight: 700; }
+        .project-name { font-size: 0.8rem; font-weight: 700; cursor: pointer; }
         .project-stats { font-size: 0.69rem; color: var(--text-muted); }
         .project-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; }
         .project-meta span { display: inline-flex; align-items: center; gap: 4px; }
@@ -1028,7 +1028,7 @@ function renderProjects(comp, fp, ft) {
         
         return `<div class="project-item" style="border:1px solid ${p.couleur || '#6366f1'};">
             <div class="project-info">
-                <div class="project-name">${escapeHtml(p.nom)}</div>
+                <div class="project-name" onclick="openKanban('${p.id}')">${escapeHtml(p.nom)}</div>
                 <div class="project-meta">
                     ${p.responsable && responsableName ? `<span title="${escapeHtml(responsableName)}"><i class="project-badge-avatar" style="background:${responsableColor}">${escapeHtml(responsableInitials)}</i></span>` : '<span>—</span>'}
                     <span>PRT: ${escapeHtml(p.prt || '—')}</span>
@@ -1286,6 +1286,11 @@ function useDemoMode() {
         {id:12,titre:'Perf frontend',   priorite:'3',projet:2,dateDebut:day(-7), dateEcheance:day(-3), progression:100,statut:'done',      type:'tache',   assignees:['L',3]},
     ];
     render();
+}
+
+function openKanban(projectId) {
+    const url = window.location.origin + '/Widgets-Grist/taskflow/kanban/?project=' + encodeURIComponent(projectId);
+    window.open(url, '_blank');
 }
 
 init();
