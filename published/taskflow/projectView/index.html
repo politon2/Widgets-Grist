@@ -428,7 +428,7 @@ function getFilteredTasks(compFilter) {
         const pStart = getPeriodStart(filters.periode);
         ft = ft.filter(t => { const d=gristToDate(t.dateEcheance); return d && d >= pStart; });
     }
-    if (filters.projets.length)  ft = ft.filter(t => filters.projets.includes(String(t.projet)));
+    if (filters.projets.length)  ft = ft.filter(t => filters.projets.includes(String(t.projet)).filter(p => p.actif !== false));
     if (filters.responsables.length) ft = ft.filter(t => {
         const project = projects.find(p => String(p.id) === String(t.projet));
         return project && filters.responsables.includes(String(project.responsable));
