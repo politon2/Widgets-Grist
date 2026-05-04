@@ -363,7 +363,7 @@ const DEFAULT_LAYOUT = [
     { id:'c2', type:'kpi',      colSpan:1, title:'En cours',   config:{ metric:'inprogress' } },
     { id:'c3', type:'kpi',      colSpan:1, title:'Terminées',  config:{ metric:'done' } },
     { id:'c4', type:'kpi',      colSpan:1, title:'En retard',  config:{ metric:'late' } },
-    { id:'c5', type:'donut',    colSpan:2, title:'Par statut', config:{ groupBy:'statut' } },
+    { id:'c5', type:'donut',    colSpan:2, title:'Par statut', config:{ groupBy:'responsable' } },
     { id:'c6', type:'bars',     colSpan:2, title:'Par Visibilité', config:{ groupBy:'priorite' } },
     { id:'c7', type:'projects', colSpan:2, title:'Projets',    config:{} },
     { id:'c8', type:'workload', colSpan:2, title:'Equipe', config:{ horizon:20 } },
@@ -781,6 +781,10 @@ function groupByField(ft, field) {
         else if (field==='priorite') key = String(getPriority(t));
         else if (field==='projet')   key = String(t.projet||'');
         else if (field==='type')     key = t.type||'tache';
+        else if (field==='responsable') {
+            const project = projects.find(p => String(p.id) === String(t.projet));
+            key = project ? String(project.responsable||'') : '';
+        }
         if (key!==undefined) counts[key]=(counts[key]||0)+1;
     });
     if (field==='statut')   return Object.entries(STATUS_LABELS).map(([k,l])=>({ key:k, label:l, count:counts[k]||0, color:STATUS_COLORS[k] }));
@@ -788,6 +792,7 @@ function groupByField(ft, field) {
     if (field==='projet')   return projects.filter(p=>counts[String(p.id)]).map(p=>({ key:String(p.id), label:p.nom, count:counts[String(p.id)]||0, color:p.couleur||'#6366f1' }));
     if (field==='type')     return [['tache','Tâche','#3b82f6'],['jalon','Jalon','#f59e0b'],['reunion','Réunion','#10b981']].map(([k,l,c])=>({ key:k, label:l, count:counts[k]||0, color:c }));
     if (field==='assignee') return team.filter(m=>counts[String(m.id)]).map(m=>({ key:String(m.id), label:(m.nom||'?').split(' ')[0], count:counts[String(m.id)]||0, color:m.couleur||'#4f46e5' }));
+    if (field==='responsable') return team.filter(m=>counts[String(m.id)]).map(m=>({ key:String(m.id), label:(m.nom||'?').split(' ')[0], count:counts[String(m.id)]||0, color:m.couleur||'#4f46e5' }));
     return [];
 }
 

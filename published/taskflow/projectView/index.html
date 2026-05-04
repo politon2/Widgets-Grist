@@ -274,7 +274,7 @@
     <!-- ── Header ── -->
     <div class="header">
         <h1>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="10" x2="16" y2="21"/><line x1="8" y1="10" x2="8" y2="21"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             Vue Projets
         </h1>
         <div class="header-filters" id="headerFilters"></div>
@@ -804,6 +804,10 @@ function groupByField(ft, field) {
         else if (field==='priorite') key = String(getPriority(t));
         else if (field==='projet')   key = String(t.projet||'');
         else if (field==='type')     key = t.type||'tache';
+        else if (field==='responsable') {
+            const project = projects.find(p => String(p.id) === String(t.projet));
+            key = project ? String(project.responsable||'') : '';
+        }
         if (key!==undefined) counts[key]=(counts[key]||0)+1;
     });
     if (field==='statut')   return Object.entries(STATUS_LABELS).map(([k,l])=>({ key:k, label:l, count:counts[k]||0, color:STATUS_COLORS[k] }));
@@ -811,6 +815,7 @@ function groupByField(ft, field) {
     if (field==='projet')   return projects.filter(p=>counts[String(p.id)]).map(p=>({ key:String(p.id), label:p.nom, count:counts[String(p.id)]||0, color:p.couleur||'#6366f1' }));
     if (field==='type')     return [['tache','Tâche','#3b82f6'],['jalon','Jalon','#f59e0b'],['reunion','Réunion','#10b981']].map(([k,l,c])=>({ key:k, label:l, count:counts[k]||0, color:c }));
     if (field==='assignee') return team.filter(m=>counts[String(m.id)]).map(m=>({ key:String(m.id), label:(m.nom||'?').split(' ')[0], count:counts[String(m.id)]||0, color:m.couleur||'#4f46e5' }));
+    if (field==='responsable') return team.filter(m=>counts[String(m.id)]).map(m=>({ key:String(m.id), label:(m.nom||'?').split(' ')[0], count:counts[String(m.id)]||0, color:m.couleur||'#4f46e5' }));
     return [];
 }
 
