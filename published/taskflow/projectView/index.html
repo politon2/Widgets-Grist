@@ -1289,11 +1289,12 @@ function useDemoMode() {
 }
 
 function openKanban(projectId) {
+    const projectValue = Number(projectId) || projectId;
     if (window.parent && typeof window.parent.go === 'function') {
-        window.parent.go('kanban', { project: projectId });
+        window.parent.go('kanban', { project: projectValue });
         return;
     }
-    const url = window.location.origin + '/Widgets-Grist/taskflow/kanban/?project=' + encodeURIComponent(projectId);
+    const url = window.location.origin + '/Widgets-Grist/taskflow/kanban/?project=' + encodeURIComponent(projectValue);
     window.location.href = url;
 }
 
