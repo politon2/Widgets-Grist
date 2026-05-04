@@ -860,7 +860,7 @@ function renderDonutTask(comp, ft) {
 function renderDonutProject(comp, fp) {
     const groups = groupByFieldProject(fp, comp.config.groupBy||'responsable').filter(g=>g.count>0);
     if (!groups.length) return '<div class="empty-state"><div class="empty-text">Aucune donnée</div></div>';
-    const total = ft.length||1;
+    const total = fp.length||1;
     const R=56, C=2*Math.PI*R;
     let offset=0, paths='', legend='';
     groups.forEach(g => {
