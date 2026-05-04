@@ -1289,8 +1289,12 @@ function useDemoMode() {
 }
 
 function openKanban(projectId) {
+    if (window.parent && typeof window.parent.go === 'function') {
+        window.parent.go('kanban', { project: projectId });
+        return;
+    }
     const url = window.location.origin + '/Widgets-Grist/taskflow/kanban/?project=' + encodeURIComponent(projectId);
-    window.open(url, '_blank');
+    window.location.href = url;
 }
 
 init();
