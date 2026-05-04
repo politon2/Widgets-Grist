@@ -424,7 +424,7 @@ function getPeriodStart(periode) {
 // ═══════════════════════════════════════════════════════════════════════════════
 function getFilteredTasks(compFilter) {
     //par défaut on filtre les taches de projet inactifs
-    let ft = tasks.filters(t => {
+    let ft = tasks.filter(t => {
         const project = projects.find(p => String(p.id) === String(t.projet));
         return project ? project.actif !== false : true;
     });
