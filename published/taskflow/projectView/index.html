@@ -340,7 +340,8 @@ const CATALOG = {
 
 const CONFIG_FIELDS = {
     kpi:      [{ key:'metric',  label:'Métrique',     options:[['total','Total tâches'],['inprogress','En cours'],['done','Terminées (tout)'],['done_week','Terminées ce sem.'],['late','En retard'],['rate','Taux de complétion %']] }],
-    donut:    [{ key:'groupBy', label:'Grouper par',  options:[['statut','Statut'],['priorite','Visibilité'],['projet','Projet'],['type','Type']] }],
+    donutTask:    [{ key:'groupBy', label:'Grouper par',  options:[['statut','Statut'],['priorite','Visibilité'],['projet','Projet'],['type','Type'],['responsable','Responsable']] }],
+    donutProject:    [{ key:'groupBy', label:'Grouper par',  options:[['responsable','Responsable']] }],
     bars:     [{ key:'groupBy', label:'Grouper par',  options:[['statut','Statut'],['priorite','Visibilité'],['projet','Projet'],['type','Type'],['assignee','Assigné']] }],
     list:     [
         { key:'preset', label:'Preset',  options:[['all','Toutes'],['overdue','En retard'],['today',"Auj."],['upcoming','À venir 14j'],['inprogress','En cours']] },
@@ -362,7 +363,7 @@ const FILTER_FIELDS = [
 
 const DEFAULT_LAYOUT = [
     { id:'c1', type:'kpi',      colSpan:1, title:'Total',      config:{ metric:'total' } },
-    { id:'c2', type:'donut',    colSpan:2, title:'Par Responsable', config:{ groupBy:'responsable' } },
+    { id:'c2', type:'donutProject',    colSpan:2, title:'Par Responsable', config:{ groupBy:'responsable' } },
     { id:'c3', type:'projects', colSpan:4, title:'Projets',    config:{} }, 
 ];
 
@@ -601,7 +602,7 @@ function removeComponent(id, e) {
 function addComponent(type) {
     const id = 'c' + (++_compIdCounter);
     const def = CATALOG[type];
-    const defaults = { kpi:{ metric:'total' }, donut:{ groupBy:'statut' }, bars:{ groupBy:'statut' }, list:{ preset:'all', limit:10 }, upcoming:{ horizon:14 }, velocity:{ weeks:6 }, workload:{}, projects:{} };
+    const defaults = { kpi:{ metric:'total' }, donutTask:{ groupBy:'statut' }, donutProject:{ groupBy:'responsable' }, bars:{ groupBy:'statut' }, list:{ preset:'all', limit:10 }, upcoming:{ horizon:14 }, velocity:{ weeks:6 }, workload:{}, projects:{} };
     dashConfig.layout.push({ id, type, colSpan: def.defaultSpan, title: def.label, config: { ...defaults[type] } });
     selectedCompId = id;
     renderGrid(); renderEditPanel(); saveConfig();
@@ -700,7 +701,7 @@ function renderEditPanel() {
 
     // ── Catalogue ──
     const CATALOG_LABELS = {
-        kpi:'KPI', donut:'Donut', bars:'Barres', list:'Liste',
+        kpi:'KPI', donutTask:'Donut Tâches', donutProject:'Donut Projets', bars:'Barres', list:'Liste',
         workload:'Équipe', upcoming:'Échéances', projects:'Projets', velocity:'Vélocité'
     };
     const catalogItems = Object.keys(CATALOG).map(type => `
@@ -766,9 +767,10 @@ function createComp(comp) {
 
 function renderCompBody(comp, fp, ft) {
     switch (comp.type) {
-        case 'kpi':      return renderKPI(comp, fp);
-        case 'projects': return renderProjects(comp, fp, ft);
-        case 'donut':    return renderDonut(comp, ft);
+        case 'kpi':             return renderKPI(comp, fp);
+        case 'projects':        return renderProjects(comp, fp, ft);
+        case 'donutTask':       return renderDonutTask(comp, ft);
+        case 'donutProject':    return renderDonutProject(comp, fp);
       /*  case 'bars':     return renderBars(comp, ft);
         case 'list':     return renderList(comp, ft);
         case 'workload': return renderWorkload(comp, ft);
@@ -820,7 +822,18 @@ function groupByField(ft, field) {
     return [];
 }
 
-function renderDonut(comp, ft) {
+function groupByFieldProject(fp, field) {
+    const counts = {};
+    fp.forEach(p => {
+        let key;
+        if (field==='responsable')   key = String(p.responsable||'');
+        if (key!==undefined) counts[key]=(counts[key]||0)+1;
+    });
+    if (field==='responsable') return team.filter(m=>counts[String(m.id)]).map(m=>({ key:String(m.id), label:(m.nom||'?').split(' ')[0], count:counts[String(m.id)]||0, color:m.couleur||'#4f46e5' }));
+    return [];
+}
+
+function renderDonutTask(comp, ft) {
     const groups = groupByField(ft, comp.config.groupBy||'statut').filter(g=>g.count>0);
     if (!groups.length) return '<div class="empty-state"><div class="empty-text">Aucune donnée</div></div>';
     const total = ft.length||1;
@@ -840,6 +853,28 @@ function renderDonut(comp, ft) {
         <div class="donut-legend">${legend}</div>
     </div>`;
 }
+
+function renderDonutProject(comp, fp) {
+    const groups = groupByFieldProject(fp, comp.config.groupBy||'responsable').filter(g=>g.count>0);
+    if (!groups.length) return '<div class="empty-state"><div class="empty-text">Aucune donnée</div></div>';
+    const total = ft.length||1;
+    const R=56, C=2*Math.PI*R;
+    let offset=0, paths='', legend='';
+    groups.forEach(g => {
+        const len=(g.count/total)*C;
+        paths+=`<circle cx="70" cy="70" r="${R}" fill="none" stroke="${g.color}" stroke-width="18" stroke-dasharray="${len} ${C}" stroke-dashoffset="${-offset}"/>`;
+        offset+=len;
+        legend+=`<div class="legend-item"><span class="legend-dot" style="background:${g.color}"></span><span>${escapeHtml(g.label)}</span><span class="legend-value">${g.count}</span></div>`;
+    });
+    return `<div class="donut-wrap">
+        <div class="donut-chart" style="width:140px;height:140px">
+            <svg width="140" height="140">${paths}</svg>
+            <div class="donut-center"><div class="donut-center-value">${fp.length}</div><div class="donut-center-label">tâches</div></div>
+        </div>
+        <div class="donut-legend">${legend}</div>
+    </div>`;
+}
+
 
 function renderBars(comp, ft) {
     const groups = groupByField(ft, comp.config.groupBy||'statut');
