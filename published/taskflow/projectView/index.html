@@ -341,7 +341,7 @@ const CATALOG = {
 const CONFIG_FIELDS = {
     kpi:      [{ key:'metric',  label:'Métrique',     options:[['total','Total tâches'],['inprogress','En cours'],['done','Terminées (tout)'],['done_week','Terminées ce sem.'],['late','En retard'],['rate','Taux de complétion %']] }],
     donutTask:    [{ key:'groupBy', label:'Grouper par',  options:[['statut','Statut'],['priorite','Visibilité'],['projet','Projet'],['type','Type'],['responsable','Responsable']] }],
-    donutProject:    [{ key:'groupBy', label:'Grouper par',  options:[['responsable','Responsable']] }],
+    donutProject:    [{ key:'groupBy', label:'Grouper par',  options:[['responsable','Responsable'],['division','Division']] }],
     bars:     [{ key:'groupBy', label:'Grouper par',  options:[['statut','Statut'],['priorite','Visibilité'],['projet','Projet'],['type','Type'],['assignee','Assigné']] }],
     list:     [
         { key:'preset', label:'Preset',  options:[['all','Toutes'],['overdue','En retard'],['today',"Auj."],['upcoming','À venir 14j'],['inprogress','En cours']] },
@@ -364,7 +364,8 @@ const FILTER_FIELDS = [
 const DEFAULT_LAYOUT = [
     { id:'c1', type:'kpi',      colSpan:1, title:'Total',      config:{ metric:'total' } },
     { id:'c2', type:'donutProject',    colSpan:2, title:'Par Responsable', config:{ groupBy:'responsable' } },
-    { id:'c3', type:'projects', colSpan:4, title:'Projets',    config:{} }, 
+    { id:'c3', type:'donutProject',    colSpan:2, title:'Par Division', config:{ groupBy:'division' } },
+    { id:'c4', type:'projects', colSpan:4, title:'Projets',    config:{} }, 
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -827,9 +828,11 @@ function groupByFieldProject(fp, field) {
     fp.forEach(p => {
         let key;
         if (field==='responsable')   key = String(p.responsable||'');
+        if (field==='division')   key = String(p.division||'');
         if (key!==undefined) counts[key]=(counts[key]||0)+1;
     });
     if (field==='responsable') return team.filter(m=>counts[String(m.id)]).map(m=>({ key:String(m.id), label:(m.nom||'?').split(' ')[0], count:counts[String(m.id)]||0, color:m.couleur||'#4f46e5' }));
+    if (field==='division') return divisions.filter(m=>counts[String(m.id)]).map(m=>({ key:String(m.id), label:(m.nom||'?').split(' ')[0], count:counts[String(m.id)]||0, color:m.couleur||'#4f46e5' }));
     return [];
 }
 
@@ -869,7 +872,7 @@ function renderDonutProject(comp, fp) {
     return `<div class="donut-wrap">
         <div class="donut-chart" style="width:140px;height:140px">
             <svg width="140" height="140">${paths}</svg>
-            <div class="donut-center"><div class="donut-center-value">${fp.length}</div><div class="donut-center-label">tâches</div></div>
+            <div class="donut-center"><div class="donut-center-value">${fp.length}</div><div class="donut-center-label">projets</div></div>
         </div>
         <div class="donut-legend">${legend}</div>
     </div>`;
