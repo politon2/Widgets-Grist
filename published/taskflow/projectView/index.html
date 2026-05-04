@@ -362,7 +362,8 @@ const FILTER_FIELDS = [
 
 const DEFAULT_LAYOUT = [
     { id:'c1', type:'kpi',      colSpan:1, title:'Total',      config:{ metric:'total' } },
-    { id:'c2', type:'projects', colSpan:4, title:'Projets',    config:{} }, 
+    { id:'c2', type:'donut',    colSpan:2, title:'Par Responsable', config:{ groupBy:'responsable' } },
+    { id:'c3', type:'projects', colSpan:4, title:'Projets',    config:{} }, 
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -767,8 +768,8 @@ function renderCompBody(comp, fp, ft) {
     switch (comp.type) {
         case 'kpi':      return renderKPI(comp, fp);
         case 'projects': return renderProjects(comp, fp, ft);
-      /*  case 'donut':    return renderDonut(comp, ft);
-        case 'bars':     return renderBars(comp, ft);
+        case 'donut':    return renderDonut(comp, ft);
+      /*  case 'bars':     return renderBars(comp, ft);
         case 'list':     return renderList(comp, ft);
         case 'workload': return renderWorkload(comp, ft);
         case 'upcoming': return renderUpcoming(comp, ft);
