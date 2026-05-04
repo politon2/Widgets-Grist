@@ -1027,6 +1027,21 @@ function renderProjects(comp, fp, ft) {
         return name.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2);
     };
 
+    const getSubtasksTooltip = task => {
+        if (!task?.subtasks) return '';
+        try {
+            const subtasks = typeof task.subtasks === 'string' ? JSON.parse(task.subtasks) : task.subtasks;
+            if (!Array.isArray(subtasks)) return '';
+            return subtasks.map(st => {
+                const text = String(st?.text || '').trim();
+                if (!text) return null;
+                return `${st?.done ? '✓' : '○'} ${text}`;
+            }).filter(Boolean).join('\n');
+        } catch (e) {
+            return '';
+        }
+    };
+
     const getAssigneesByCategory = (projTasks, category) => {
         const set = new Set();
         (projTasks || []).forEach(t => {
@@ -1112,8 +1127,9 @@ function renderProjects(comp, fp, ft) {
                             ${projectTasks.sort((a, b) => (a.categorie || '').localeCompare(b.categorie || '')).map(t => {
                                 const prio = parseInt(t.priorite, 10);
                                 const prioClass = prio === 1 ? 'priority-1' : prio === 2 ? 'priority-2' : '';
+                                const tooltip = escapeHtml(getSubtasksTooltip(t));
                                 return `
-                                <tr class="${prioClass}">
+                                <tr class="${prioClass}" title="${tooltip}">
                                     <td>${escapeHtml(t.titre || '')}</td>
                                     <td>${escapeHtml(t.description || '')}</td>
                                     <td>${t.dateDebut ? gristToDate(t.dateDebut).toLocaleDateString('fr-FR') : ''}</td>
