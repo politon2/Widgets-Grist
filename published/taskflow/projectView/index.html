@@ -451,7 +451,8 @@ function getFilteredTasks(compFilter) {
 }
 
 function getFilteredProjects(compFilter) {
-    let fp = projects;
+    //let fp = projects;
+    let fp = projects.filter(p => p.actif !== false);
     if (filters.periode !== 'all') {
         const pStart = getPeriodStart(filters.periode);
         fp = fp.filter(p => { const d=gristToDate(p.dateFin); return d && d >= pStart; });
