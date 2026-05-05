@@ -1271,6 +1271,7 @@
             const idx = panelState.taskList.findIndex(t => t.id === taskId);
 
             panelState.isNew = false;
+            panelState.showAllAssignees = false;
             panelState.taskId = taskId;
             panelState.taskIndex = idx >= 0 ? idx : 0;
             panelState.editData = cloneTaskData(task);
@@ -1395,7 +1396,22 @@
             // Assignés
             const assigneesChips = data.assignees.map(id => `<span class="multi-select-chip">${escapeHtml(getTeamMemberName(id))}<span class="remove" onclick="event.stopPropagation();removeAssignee(${id})">×</span></span>`).join('');
             // A15: Options membres avec dot couleur + swatches preset
-            const assigneesOptions = team.filter(m => m.actif !== false).map(m => {
+            let filteredTeam = team.filter(m => m.actif !== false);
+            if (!panelState.showAllAssignees && data.categorie) {
+                const cat = data.categorie;
+                if (cat === 'budget') {
+                    filteredTeam = filteredTeam.filter(m => m.role === 'MOA' || m.role === 'Resp. Domaine');
+                } else if (cat === 'fonctionnel') {
+                    filteredTeam = filteredTeam.filter(m => m.role === 'Fonctionnel');
+                } else if (cat === 'architecture') {
+                    filteredTeam = filteredTeam.filter(m => m.role && m.role.toLowerCase().startsWith('archi'));
+                } else if (cat === 'technique') {
+                    filteredTeam = filteredTeam.filter(m => m.role === 'Technique' || m.role === 'Ingénieur Sécurité');
+                } else if (cat === 'transfert') {
+                    filteredTeam = filteredTeam.filter(m => m.role === 'MOE');
+                }
+            }
+            const assigneesOptions = filteredTeam.map(m => {
                 const swatches = COLOR_PRESETS.map(c => `<span class="color-swatch" style="background:${c}" onclick="event.stopPropagation();setMemberColor(${m.id},'${c}')"></span>`).join('');
                 return `<div class="multi-select-option ${data.assignees.includes(m.id) ? 'selected' : ''}" onclick="toggleAssignee(${m.id})"><div class="member-color-wrap"><span class="member-color-dot" style="background:${getTeamMemberColor(m.id)}" onclick="event.stopPropagation();this.nextElementSibling.classList.toggle('open')"></span><div class="member-color-picker">${swatches}</div></div><input type="checkbox" ${data.assignees.includes(m.id) ? 'checked' : ''} onclick="event.stopPropagation();toggleAssignee(${m.id})">${escapeHtml(m.nom)}</div>`;
             }).join('');
@@ -1460,7 +1476,10 @@
                         <div class="prop-value"><div class="project-select-wrap"><span class="project-color-dot" style="background:${projectColor}"></span><select class="form-select" onchange="updateField('projet', parseInt(this.value) || null)"><option value="">Aucun projet</option>${projectOptions}</select></div></div>
                     </div>
                     <div class="prop-row">
-                        <span class="prop-label">${assignLabel}</span>
+                        <div class="prop-label-row">
+                            <span class="prop-label">${assignLabel}</span>
+                            <button class="toggle-all-btn" onclick="toggleShowAllAssignees()">${panelState.showAllAssignees ? 'Filtré' : 'Tout'}</button>
+                        </div>
                         <div class="prop-value"><div class="multi-select" id="assigneesSelect"><div class="multi-select-trigger" onclick="toggleMultiSelect('assigneesSelect')"><div class="multi-select-values">${assigneesChips || '<span class="multi-select-placeholder">Assigner à...</span>'}</div><span class="multi-select-arrow">▾</span></div><div class="multi-select-dropdown">${assigneesOptions || '<div class="multi-select-empty">Aucun membre</div>'}</div></div></div>
                     </div>
                     ${data.type === 'tache' ? `
@@ -1709,6 +1728,11 @@
                 renderPanelTask();
                 render();
             }
+        }
+        
+        function toggleShowAllAssignees() {
+            panelState.showAllAssignees = !panelState.showAllAssignees;
+            renderPanelTask();
         }
 
         async function setMemberColor(memberId, color) {
