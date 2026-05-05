@@ -380,6 +380,10 @@
                 <div class="filter-btn" id="filterStatusBtn" onclick="toggleFilterMenu('status')">Statuts ▾</div>
                 <div class="filter-menu" id="filterStatusMenu"></div>
             </div>
+            <div class="filter-dropdown">
+                <div class="filter-btn" id="filterRespBtn" onclick="toggleFilterMenu('responsable')">Responsables ▾</div>
+                <div class="filter-menu" id="filterRespMenu"></div>
+            </div>
             <div class="search-box"><input type="text" id="searchInput" placeholder="Rechercher..." oninput="handleSearch(this.value)"></div>
             <div class="filter-dropdown" id="exportDropdown">
                 <button class="btn" onclick="toggleFilterMenu('export')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Exporter ▾</button>
@@ -437,7 +441,7 @@
         // ═══════════════════════════════════════════════════════════════════════
         let tasks = [], team = [], projects = [], divisions = [], moa = [], gristReady = false;
         let groupBy = 'projet', searchQuery = '', selectedTaskId = null;
-        let filters = { project: [], division: [], priority: [], assignee: [], status: [] };  // KAN-01: Ajout filtre statut
+        let filters = { project: [], division: [], priority: [], assignee: [], status: [], responsable: [] };  // KAN-01: Ajout filtre statut
         let panelState = { open: false, isNew: false, taskId: null, taskIndex: -1, columnTasks: [], columnKey: null, editData: null };
         let sortableInstances = [];
         let saveTimeout = null;
@@ -571,11 +575,14 @@
             document.getElementById('filterAssigneeMenu').innerHTML = team.filter(m => m.actif !== false).map(m => `<div class="filter-option" onclick="toggleFilterValue('assignee', ${m.id})"><input type="checkbox" ${filters.assignee.includes(m.id) ? 'checked' : ''}>${escapeHtml(m.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
             // KAN-01: Filtre par statut
             document.getElementById('filterStatusMenu').innerHTML = Object.entries(STATUS_LABELS).map(([key, label]) => `<div class="filter-option" onclick="toggleFilterValue('status', '${key}')"><input type="checkbox" ${filters.status.includes(key) ? 'checked' : ''}>${label}</div>`).join('');
+            document.getElementById('filterRespMenu').innerHTML = team.filter(m => m.actif !== false && m.role === 'Chef de projet').map(m => `<div class="filter-option" onclick="toggleFilterValue('responsable', ${m.id})"><input type="checkbox" ${filters.responsable.includes(m.id) ? 'checked' : ''}>${escapeHtml(m.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
+            
             document.getElementById('filterProjectBtn').classList.toggle('has-filter', filters.project.length > 0);
             document.getElementById('filterDivisionBtn').classList.toggle('has-filter', filters.division.length > 0);
             document.getElementById('filterPriorityBtn').classList.toggle('has-filter', filters.priority.length > 0);
             document.getElementById('filterAssigneeBtn').classList.toggle('has-filter', filters.assignee.length > 0);
             document.getElementById('filterStatusBtn').classList.toggle('has-filter', filters.status.length > 0);
+            document.getElementById('filterRespBtn').classList.toggle('has-filter', filters.responsable.length > 0);
         }
         function toggleFilterValue(type, val) { const arr = filters[type]; const idx = arr.indexOf(val); if (idx === -1) arr.push(val); else arr.splice(idx, 1); updateFilterMenus(); broadcastFilters(); render(); }
         function handleSearch(q) { searchQuery = q.toLowerCase(); render(); }
@@ -587,6 +594,7 @@
                 if (filters.assignee.length && !getAssignees(t).some(a => filters.assignee.includes(a))) return false;
                 // KAN-01: Filtre par statut
                 if (filters.status.length && !filters.status.includes(t.statut || 'todo')) return false;
+                if (filters.responable.length && !filters.responsable.includes(getProjectManagerName(t.projet))) return false;
                 if (searchQuery && !(t.titre||'').toLowerCase().includes(searchQuery)) return false;
                 return true;
             }).sort((a, b) => (a.titre || '').localeCompare((b.titre || '')));
