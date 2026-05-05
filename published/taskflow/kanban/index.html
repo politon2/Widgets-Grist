@@ -858,13 +858,15 @@
             if (!panelState.showAllAssignees && data.categorie) {
                 const cat = data.categorie;
                 if (cat === 'budget') {
-                    filteredTeam = filteredTeam.filter(m => m.role === 'MOA');
+                    filteredTeam = filteredTeam.filter(m => m.role === 'MOA' || m.role === 'Resp. Domaine');
                 } else if (cat === 'fonctionnel') {
                     filteredTeam = filteredTeam.filter(m => m.role === 'Fonctionnel');
                 } else if (cat === 'architecture') {
                     filteredTeam = filteredTeam.filter(m => m.role && m.role.toLowerCase().startsWith('archi'));
                 } else if (cat === 'technique') {
-                    filteredTeam = filteredTeam.filter(m => m.role === 'Technique');
+                    filteredTeam = filteredTeam.filter(m => m.role === 'Technique' || m.role === 'Ingénieur Sécurité');
+                } else if (cat === 'transfert') {
+                    filteredTeam = filteredTeam.filter(m => m.role === 'MOE');
                 }
             }
             const assigneesOptions = filteredTeam.map(m => {
