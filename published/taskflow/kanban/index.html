@@ -381,8 +381,8 @@
                 <div class="filter-menu" id="filterStatusMenu"></div>
             </div>-->
             <div class="filter-dropdown">
-                <div class="filter-btn" id="filterRespBtn" onclick="toggleFilterMenu('responsable')">Responsables ▾</div>
-                <div class="filter-menu" id="filterRespMenu"></div>
+                <div class="filter-btn" id="filterResponsableBtn" onclick="toggleFilterMenu('responsable')">Responsables ▾</div>
+                <div class="filter-menu" id="filterResponsableMenu"></div>
             </div>
             <div class="search-box"><input type="text" id="searchInput" placeholder="Rechercher..." oninput="handleSearch(this.value)"></div>
             <div class="filter-dropdown" id="exportDropdown">
@@ -575,14 +575,14 @@
             document.getElementById('filterAssigneeMenu').innerHTML = team.filter(m => m.actif !== false).map(m => `<div class="filter-option" onclick="toggleFilterValue('assignee', ${m.id})"><input type="checkbox" ${filters.assignee.includes(m.id) ? 'checked' : ''}>${escapeHtml(m.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
             // KAN-01: Filtre par statut
             //document.getElementById('filterStatusMenu').innerHTML = Object.entries(STATUS_LABELS).map(([key, label]) => `<div class="filter-option" onclick="toggleFilterValue('status', '${key}')"><input type="checkbox" ${filters.status.includes(key) ? 'checked' : ''}>${label}</div>`).join('');
-            document.getElementById('filterRespMenu').innerHTML = team.filter(m => m.actif !== false && m.role === 'Chef de projet').map(m => `<div class="filter-option" onclick="toggleFilterValue('responsable', ${m.id})"><input type="checkbox" ${filters.responsable.includes(m.id) ? 'checked' : ''}>${escapeHtml(m.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
+            document.getElementById('filterResponsableMenu').innerHTML = team.filter(m => m.actif !== false && m.role === 'Chef de projet').map(m => `<div class="filter-option" onclick="toggleFilterValue('responsable', ${m.id})"><input type="checkbox" ${filters.responsable.includes(m.id) ? 'checked' : ''}>${escapeHtml(m.nom)}</div>`).join('') || '<div class="filter-option">Aucun</div>';
             
             document.getElementById('filterProjectBtn').classList.toggle('has-filter', filters.project.length > 0);
             document.getElementById('filterDivisionBtn').classList.toggle('has-filter', filters.division.length > 0);
             document.getElementById('filterPriorityBtn').classList.toggle('has-filter', filters.priority.length > 0);
             document.getElementById('filterAssigneeBtn').classList.toggle('has-filter', filters.assignee.length > 0);
             //document.getElementById('filterStatusBtn').classList.toggle('has-filter', filters.status.length > 0);
-            document.getElementById('filterRespBtn').classList.toggle('has-filter', filters.responsable.length > 0);
+            document.getElementById('filterResponsableBtn').classList.toggle('has-filter', filters.responsable.length > 0);
         }
         function toggleFilterValue(type, val) { const arr = filters[type]; const idx = arr.indexOf(val); if (idx === -1) arr.push(val); else arr.splice(idx, 1); updateFilterMenus(); broadcastFilters(); render(); }
         function handleSearch(q) { searchQuery = q.toLowerCase(); render(); }
