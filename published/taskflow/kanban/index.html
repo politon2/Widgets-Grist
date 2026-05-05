@@ -594,7 +594,7 @@
                 if (filters.assignee.length && !getAssignees(t).some(a => filters.assignee.includes(a))) return false;
                 // KAN-01: Filtre par statut
                 if (filters.status.length && !filters.status.includes(t.statut || 'todo')) return false;
-                if (filters.responsable.length && !filters.responsable.includes(getProjectManagerName(t.projet))) return false;
+                if (filters.responsable.length && !filters.responsable.includes(t.projet.responsable)) return false;
                 if (searchQuery && !(t.titre||'').toLowerCase().includes(searchQuery)) return false;
                 return true;
             }).sort((a, b) => (a.titre || '').localeCompare((b.titre || '')));
