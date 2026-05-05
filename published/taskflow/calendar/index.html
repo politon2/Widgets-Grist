@@ -307,25 +307,33 @@
         .progress-preset:hover { background: var(--primary-light); border-color: var(--primary); }
         .progress-preset.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Multi-select (Assignés, Dépendances) */
+        
+        /* Multi-select */
         .multi-select { position: relative; }
         .multi-select-trigger { min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--card-bg); }
-        .multi-select-trigger:hover { border-color: var(--border-dark); }
         .multi-select.open .multi-select-trigger { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         .multi-select-values { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
         .multi-select-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; background: var(--primary-light); color: var(--primary); border-radius: 4px; font-size: 0.72rem; font-weight: 500; }
-        .multi-select-chip .remove { cursor: pointer; font-size: 0.85rem; opacity: 0.7; margin-left: 2px; }
+        .multi-select-chip .remove { cursor: pointer; font-size: 0.85rem; opacity: 0.7; }
         .multi-select-chip .remove:hover { opacity: 1; }
         .multi-select-placeholder { color: var(--text-muted); font-size: 0.8rem; }
-        .multi-select-arrow { color: var(--text-muted); font-size: 0.7rem; flex-shrink: 0; }
+        .multi-select-arrow { color: var(--text-muted); font-size: 0.7rem; }
         .multi-select-dropdown { position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-lg); z-index: 100; display: none; max-height: 180px; overflow-y: auto; }
         .multi-select.open .multi-select-dropdown { display: block; }
         .multi-select-option { padding: 8px 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
         .multi-select-option:hover { background: var(--bg); }
+        /* A15: Color picker membres d'équipe */
+        .member-color-wrap { position: relative; display: inline-flex; align-items: center; flex-shrink: 0; }
+        .member-color-dot { width: 14px; height: 14px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.5); transition: transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .member-color-dot:hover { transform: scale(1.25); }
+        .member-color-picker { display: none; position: absolute; left: 18px; top: 50%; transform: translateY(-50%); background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px; box-shadow: var(--shadow-lg); z-index: 200; flex-wrap: wrap; gap: 4px; width: 128px; }
+        .member-color-picker.open { display: flex; }
+        .color-swatch { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+        .color-swatch:hover { transform: scale(1.3); border-color: rgba(0,0,0,0.2); }
         .multi-select-option.selected { background: var(--primary-light); }
-        .multi-select-option input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--primary); flex-shrink: 0; }
+        .multi-select-option input { width: 14px; height: 14px; }
         .multi-select-empty { padding: 12px; text-align: center; color: var(--text-muted); font-size: 0.8rem; }
-
+  
         /* Tags Input */
         .tags-input { display: flex; flex-wrap: wrap; gap: 5px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; min-height: 40px; align-items: center; cursor: text; background: var(--card-bg); }
         .tags-input:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
