@@ -402,7 +402,7 @@ const getStatus    = t => t?.statut||'todo';
 
 const getAssigneesArray = t => {
     if (!t?.assignees) return [];
-    if (Array.isArray(t.assignees)) return t.assignees[0]==='L' ? t.assignees.slice(1) : t.assignees;
+    if (Array.isArray(t.assignees)) return (t.assignees[0]==='L' ? t.assignees.slice(1) : t.assignees).sort();
     return [];
 };
 
