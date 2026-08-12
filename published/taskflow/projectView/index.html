@@ -1136,7 +1136,7 @@ function renderProjects(comp, fp, ft) {
                                 return `
                                 <tr class="${prioClass}" title="${tooltip}">
                                     <td>${escapeHtml(t.titre || '')}</td>
-                                    <td>${escapeHtml(t.description || '')}</td>
+                                    <td style="white-space: pre-wrap;">${escapeHtml(t.description || '')}</td>
                                     <td>${t.dateDebut ? gristToDate(t.dateDebut).toLocaleDateString('fr-FR') : ''}</td>
                                     <td>${t.dateEcheance ? gristToDate(t.dateEcheance).toLocaleDateString('fr-FR') : ''}</td>
                                     <td>${t.progression || 0}%</td>
