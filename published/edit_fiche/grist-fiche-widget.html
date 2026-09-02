@@ -692,6 +692,12 @@ function refChip(target, id, label){
   const attrs = ok ? `data-open-ref="${escapeHtml(target)}" data-open-row="${id}"` : '';
   return `<span class="chip ${ok?'ref-open':''}" ${attrs}>${escapeHtml(String(label))}${ok?' <span class="op">↗</span>':''}</span>`;
 }
+function refDisplayLabel(target, id, label){
+  const rowId = Number(id);
+  if(!target || !Number.isInteger(rowId) || rowId<=0) return label;
+  const text = label==null ? '' : String(label);
+  return text ? `${target}[${rowId}] — ${text}` : `${target}[${rowId}]`;
+}
 
 /* ---- Formatage des valeurs (mode lecture) ---- */
 function fmtDate(v,type){
@@ -975,7 +981,10 @@ function fmtScalar(meta, value){
   if(kind==='choicelist') return asList(value).map(c=>`<span class="chip">${escapeHtml(String(c))}</span>`).join(' ');
   if(kind==='ref'){
     const tt = refTarget(t); const cache = REFCACHE[tt];
-    if(typeof value==='number'){ const f = cache && cache.find(o=>o.id===value); return escapeHtml(f? f.label : ('#'+value)); }
+    if(typeof value==='number'){
+      const f = cache && cache.find(o=>o.id===value);
+      return escapeHtml(refDisplayLabel(tt, value, f?f.label:('#'+value)));
+    }
     return escapeHtml(String(value));
   }
   if(kind==='reflist'){ return escapeHtml(asList(value).filter(x=>x!=null&&x!=='').length+' lié(s)'); }
@@ -1133,7 +1142,7 @@ function render(){
 
   const linkVal = linkValueFor();
   const linkBtn = linkVal ? `<button class="gear linkbtn" data-act="copylink" title="Copier le lien vers cette fiche">${icon('link')} Lien</button>` : '';
-  let hdr = `<div class="header-actions">${linkBtn}<button class="gear ${configuring?'active':''}" data-act="gear">${gearSvg}${configuring?'Terminer':'Champignon'}</button></div>`;
+  let hdr = `<div class="header-actions">${linkBtn}<button class="gear ${configuring?'active':''}" data-act="gear">${gearSvg}${configuring?'Terminer':'Champs'}</button></div>`;
   let titleLine = '';
   if(titleKey){
     const tv = CURRENT[titleKey]||'';
@@ -1474,7 +1483,8 @@ function propRow(k){
   if(refEnc){
     // Référence calculée (formule / type Any) : ['R', table, id] → pastille ouvrable
     const dispHelper = refDisplay(k);
-    const lbl = (dispHelper!=null && dispHelper!=='') ? dispHelper : (refLabelFor(k, refEnc.id) ?? ('#'+refEnc.id));
+    const rawLabel = (dispHelper!=null && dispHelper!=='') ? dispHelper : (refLabelFor(k, refEnc.id) ?? ('#'+refEnc.id));
+    const lbl = refDisplayLabel(refEnc.target, refEnc.id, rawLabel);
     inner = `<span class="chips">${refChip(refEnc.target, refEnc.id, lbl)}</span>`;
   } else if(refListEnc){
     // Liste de références calculée : ['r', table, [ids]] → pastilles ouvrables (comme une RefList de données)
@@ -1509,7 +1519,7 @@ function propRow(k){
                  : (refLabelFor(k, val) ?? (typeof val==='number' ? '#'+val : String(val)));
       inner = (disp==null||disp==='')
         ? (ph=true,'Vide')
-        : `<span class="chips">${refChip(target, id, disp)}</span>`;
+        : `<span class="chips">${refChip(target, id, refDisplayLabel(target, id, disp))}</span>`;
     }
   } else if(kind==='reflist'){
     const target = refTarget(type);
@@ -2158,7 +2168,7 @@ function commentsHtml(){
     return `<div class="cmt ${resolved?'resolved':''}">
         <div class="cmt-head">
           <span class="cmt-author">${escapeHtml(author||'—')}</span>
-          ${colLab?`<span class="cmt-col">${escapeHtml(colLab)} (libellé) </span>`:''}
+          ${colLab?`<span class="cmt-col">${escapeHtml(colLab)}</span>`:''}
           ${date?`<span class="cmt-date">${escapeHtml(date)}</span>`:''}
           ${resolved?`<span class="cmt-res">résolu</span>`:''}
         </div>
