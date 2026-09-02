@@ -711,7 +711,7 @@ function refRowId(target, value){
 }
 function refSelectHtml(k, target, value){
   const selected = refRowId(target, value);
-  const opts = REFCACHE[target] || (typeof DEMO_REFS!=='undefined' ? DEMO_REFS[target] : []);
+  const opts = REFCACHE[target] || (typeof DEMO_REFS!=='undefined' ? DEMO_REFS[target] : []) || [];
   const options = opts.map(o=>`<option value="${o.id}" ${o.id===selected?'selected':''}>${escapeHtml(String(o.label))}</option>`).join('');
   const fallback = selected>0 && !opts.some(o=>o.id===selected)
     ? `<option value="${selected}" selected>Chargement…</option>` : '';
