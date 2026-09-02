@@ -698,6 +698,9 @@ function refDisplayLabel(target, id, label){
   const text = label==null ? '' : String(label);
   return text ? `${target}[${rowId}] — ${text}` : `${target}[${rowId}]`;
 }
+function isBareRefDisplay(target, id, label){
+  return String(label??'').trim() === `${target}[${Number(id)}]`;
+}
 
 /* ---- Formatage des valeurs (mode lecture) ---- */
 function fmtDate(v,type){
@@ -1515,8 +1518,9 @@ function propRow(k){
         const f = REFCACHE[target].find(o=>o.label===val); if(f) id=f.id;
       }
       const dispHelper = refDisplay(k);
-      const disp = (dispHelper!=null && dispHelper!=='') ? dispHelper
-                 : (refLabelFor(k, val) ?? (typeof val==='number' ? '#'+val : String(val)));
+      const fallback = refLabelFor(k, val) ?? (typeof val==='number' ? '#'+val : String(val));
+      const disp = (dispHelper!=null && dispHelper!=='' && !isBareRefDisplay(target, val, dispHelper))
+        ? dispHelper : fallback;
       inner = (disp==null||disp==='')
         ? (ph=true,'Vide')
         : `<span class="chips">${refChip(target, id, refDisplayLabel(target, id, disp))}</span>`;
