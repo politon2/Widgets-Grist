@@ -553,7 +553,6 @@ let CURRENT = null;       // ligne courante {id, ...fields}
 let TABLE_ID = null;
 let TABLE_SOURCE = null;
 let TABLE_ROWS = null;
-let TABLE_NAMES = [];
 let TABLE_REF = null;       // ref de la table courante dans _grist_Tables (pour les commentaires)
 let ALL_CELLS = null;       // cache de _grist_Cells (commentaires)
 let COMMENTS = [];          // commentaires de la ligne courante
@@ -1408,22 +1407,17 @@ function tableLabelAt(index){
 function renderTableShell(){
   const toolbar = $('#table-toolbar');
   const sidebar = $('#table-sidebar');
-  const sourceOptions = TABLE_NAMES.map(name=>`<option value="${escapeHtml(name)}" ${name===TABLE_SOURCE?'selected':''}>${escapeHtml(name)}</option>`).join('');
-  toolbar.innerHTML = `<span style="font-size:12px;color:var(--ink-soft)">Table source</span>
-    <select class="table-source" data-table-source aria-label="Table source">
-      <option value="">— Choisir une table —</option>${sourceOptions}</select>
+  toolbar.innerHTML = `<span style="font-size:12px;color:var(--ink-soft)">Table : ${escapeHtml(TABLE_SOURCE||'—')}</span>
     <button class="table-action" data-table-add ${TABLE_SOURCE?'':'disabled'}>＋ Ajouter</button>
     <button class="table-action danger" data-table-delete ${CURRENT?'':'disabled'}>Supprimer</button>`;
   if(!TABLE_SOURCE || !TABLE_ROWS){
-    sidebar.innerHTML = '<div class="table-empty">Choisissez une table source.</div>';
+    sidebar.innerHTML = '<div class="table-empty">Aucune ligne à afficher.</div>';
   } else {
     sidebar.innerHTML = `<div class="table-sidebar-head"><span class="table-sidebar-title">${escapeHtml(TABLE_SOURCE)} (${TABLE_ROWS.id.length})</span></div>
       <div class="table-list">${TABLE_ROWS.id.map((id,i)=>`<button class="table-row ${CURRENT&&CURRENT.id===id?'selected':''}" data-table-row="${id}" title="${escapeHtml(tableLabelAt(i))}">${escapeHtml(tableLabelAt(i))}</button>`).join('')}</div>`;
   }
-  const detail = $('#table-main');
   viewRoot = wrap;
   renderFiche();
-  toolbar.querySelector('[data-table-source]').addEventListener('change', e=>loadTableSource(e.target.value));
   const add = toolbar.querySelector('[data-table-add]');
   if(add) add.addEventListener('click', addTableRow);
   const del = toolbar.querySelector('[data-table-delete]');
@@ -1435,13 +1429,8 @@ function renderTableShell(){
   }));
 }
 function render(){ renderTableShell(); }
-async function loadTableChoices(){
-  if(!IN_GRIST || !grist.docApi.listTables) return;
-  try{ TABLE_NAMES = (await grist.docApi.listTables()).filter(n=>!n.startsWith('_grist_')); }catch(e){ console.warn('Tables indisponibles',e); }
-}
 async function loadTableSource(source){
-  TABLE_SOURCE = source || null; TABLE_ROWS = null; CURRENT = null;
-  saveOptions(); render();
+  TABLE_SOURCE = source || null; TABLE_ROWS = null; CURRENT = null; render();
   if(!TABLE_SOURCE || !IN_GRIST) return;
   try{
     TABLE_ROWS = await grist.docApi.fetchTable(TABLE_SOURCE);
@@ -2372,7 +2361,7 @@ function gristOptionsApi(){ return (typeof grist!=='undefined' && grist.widgetAp
 function configPayload(){
   // Paramétrage réutilisable (sans linkTemplate, propre à chaque page)
   return { collapsed:[...FOLDED], order: ORDER, title: TITLE_KEY, subtitle: SUBTITLE_KEY, tags: TAGS_KEY, headerImage: HEADER_IMG,
-           reflistMode: RL_MODE, reflistCols: RL_COLS, link: LINK_KEY, buttons:[...BTN_FIELDS], tableSource: TABLE_SOURCE };
+           reflistMode: RL_MODE, reflistCols: RL_COLS, link: LINK_KEY, buttons:[...BTN_FIELDS] };
 }
 function applyConfigJson(text){
   let obj; try{ obj = JSON.parse(text); }catch(e){ toast('Config illisible (JSON invalide)'); return; }
@@ -2392,7 +2381,6 @@ function applyConfigJson(text){
 }
 function applyOptions(opts){
   if(!opts) return;
-  if('tableSource' in opts) TABLE_SOURCE = opts.tableSource || null;
   if(Array.isArray(opts.collapsed)) FOLDED = new Set(opts.collapsed);
   if(Array.isArray(opts.order)) ORDER = opts.order.slice();
   if('title' in opts) TITLE_KEY = opts.title || null;
@@ -2410,7 +2398,7 @@ async function saveOptions(){
   try{
     const api = gristOptionsApi();
     const payload = { collapsed:[...FOLDED], order: ORDER, title: TITLE_KEY, subtitle: SUBTITLE_KEY, tags: TAGS_KEY, headerImage: HEADER_IMG,
-              reflistMode: RL_MODE, reflistCols: RL_COLS, link: LINK_KEY, buttons:[...BTN_FIELDS], linkTemplate: LINK_TEMPLATE, tableSource: TABLE_SOURCE };
+              reflistMode: RL_MODE, reflistCols: RL_COLS, link: LINK_KEY, buttons:[...BTN_FIELDS], linkTemplate: LINK_TEMPLATE };
     if(api && api.setOptions) await api.setOptions(payload);
     else if(api && api.setOption){ for(const [k,v] of Object.entries(payload)) await api.setOption(k, v); }
   }catch(e){ console.warn('Sauvegarde des options impossible', e); }
@@ -2423,12 +2411,11 @@ function initGrist(){
   // options (champs repliés) — onOptions se déclenche au démarrage et à chaque changement
   try{
     if(grist.onOptions) grist.onOptions(async (opts)=>{
-      const previous = TABLE_SOURCE;
       applyOptions(opts);
-      await loadTableChoices();
-      if(TABLE_SOURCE && TABLE_SOURCE!==previous) await loadTableSource(TABLE_SOURCE); else render();
+      await initLinkedTable();
     });
   }catch(_){}
+  initLinkedTable();
   // expandRefs:false → les colonnes Référence / Liste de références arrivent en
   // row ids (et non en libellés), pour un rapprochement fiable par identifiant
   // dans les sous-tableaux (les noms ne sont pas uniques). Les libellés restent
@@ -2457,6 +2444,9 @@ function initGrist(){
     await Promise.all([loadCommentsForCurrent(), preloadRefRows()]);
     render();
   }, { expandRefs:false });
+  grist.onRecords(async ()=>{
+    if(TABLE_SOURCE && !editingKey) await reloadTableSource(CURRENT?.id);
+  });
   // Curseur sur une ligne vide / aucun enregistrement lié → vider la fiche
   try{
     if(grist.onNewRecord) grist.onNewRecord(()=>{
@@ -2465,6 +2455,15 @@ function initGrist(){
     });
   }catch(_){}
   return true;
+}
+
+async function initLinkedTable(){
+  if(!IN_GRIST || !grist.selectedTable?.getTableId) return;
+  try{
+    const source = await grist.selectedTable.getTableId();
+    if(source && source!==TABLE_SOURCE) await loadTableSource(source);
+    else if(!TABLE_SOURCE) render();
+  }catch(e){ console.warn('Table source indisponible',e); render(); }
 }
 
 /* ---- Données de démo (aperçu hors Grist) ---- */
