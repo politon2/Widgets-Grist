@@ -1133,7 +1133,7 @@ function render(){
 
   const linkVal = linkValueFor();
   const linkBtn = linkVal ? `<button class="gear linkbtn" data-act="copylink" title="Copier le lien vers cette fiche">${icon('link')} Lien</button>` : '';
-  let hdr = `<div class="header-actions">${linkBtn}<button class="gear ${configuring?'active':''}" data-act="gear">${gearSvg}${configuring?'Terminer':'Champs'}</button></div>`;
+  let hdr = `<div class="header-actions">${linkBtn}<button class="gear ${configuring?'active':''}" data-act="gear">${gearSvg}${configuring?'Terminer':'Champignon'}</button></div>`;
   let titleLine = '';
   if(titleKey){
     const tv = CURRENT[titleKey]||'';
