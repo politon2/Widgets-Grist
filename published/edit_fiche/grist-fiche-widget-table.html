@@ -67,6 +67,11 @@
   .table-sidebar{border-right:1px solid var(--line);padding:14px 12px 14px 0;min-width:0}
   .table-sidebar-head{display:flex;align-items:center;gap:6px;margin-bottom:10px}
   .table-sidebar-title{font-size:12px;color:var(--ink-soft);font-weight:600;flex:1}
+  .table-sort{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;
+    padding:0;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--ink-faint);
+    font:inherit;font-size:14px;cursor:pointer}
+  .table-sort:hover{background:var(--bg);border-color:var(--line)}
+  .table-sort.active{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
   .table-list{display:flex;flex-direction:column;gap:2px;min-height:0;max-height:calc(100vh - 125px);overflow-y:auto;overflow-x:hidden}
   .table-row{display:block;width:100%;padding:7px 9px;border:0;border-radius:6px;background:transparent;
     color:var(--ink);font:inherit;font-size:13px;line-height:1.4;text-align:left;cursor:pointer;overflow:hidden;
@@ -553,6 +558,7 @@ let CURRENT = null;       // ligne courante {id, ...fields}
 let TABLE_ID = null;
 let TABLE_SOURCE = null;
 let TABLE_ROWS = null;
+let TABLE_SORT = 'table';
 let TABLE_REF = null;       // ref de la table courante dans _grist_Tables (pour les commentaires)
 let ALL_CELLS = null;       // cache de _grist_Cells (commentaires)
 let COMMENTS = [];          // commentaires de la ligne courante
@@ -1413,8 +1419,12 @@ function renderTableShell(){
   if(!TABLE_SOURCE || !TABLE_ROWS){
     sidebar.innerHTML = '<div class="table-empty">Aucune ligne à afficher.</div>';
   } else {
-    sidebar.innerHTML = `<div class="table-sidebar-head"><span class="table-sidebar-title">${escapeHtml(TABLE_SOURCE)} (${TABLE_ROWS.id.length})</span></div>
-      <div class="table-list">${TABLE_ROWS.id.map((id,i)=>`<button class="table-row ${CURRENT&&CURRENT.id===id?'selected':''}" data-table-row="${id}" title="${escapeHtml(tableLabelAt(i))}">${escapeHtml(tableLabelAt(i))}</button>`).join('')}</div>`;
+    const order = TABLE_ROWS.id.map((id,i)=>({id,index:i,label:tableLabelAt(i)}));
+    if(TABLE_SORT==='alpha') order.sort((a,b)=>a.label.localeCompare(b.label,'fr',{sensitivity:'base'}));
+    sidebar.innerHTML = `<div class="table-sidebar-head"><span class="table-sidebar-title">${escapeHtml(TABLE_SOURCE)} (${TABLE_ROWS.id.length})</span>
+        <button class="table-sort ${TABLE_SORT==='table'?'active':''}" data-table-sort="table" title="Ordre de la table" aria-label="Ordre de la table">↕</button>
+        <button class="table-sort ${TABLE_SORT==='alpha'?'active':''}" data-table-sort="alpha" title="Ordre alphabétique" aria-label="Ordre alphabétique">A↕Z</button></div>
+      <div class="table-list">${order.map(item=>`<button class="table-row ${CURRENT&&CURRENT.id===item.id?'selected':''}" data-table-row="${item.id}" title="${escapeHtml(item.label)}">${escapeHtml(item.label)}</button>`).join('')}</div>`;
   }
   viewRoot = wrap;
   renderFiche();
@@ -1426,6 +1436,10 @@ function renderTableShell(){
     const record = TABLE_ROWS && TABLE_ROWS.id.map(Number).includes(Number(row.dataset.tableRow))
       ? tableRecordAt(TABLE_ROWS.id.findIndex(id=>Number(id)===Number(row.dataset.tableRow))) : null;
     if(record){ CURRENT=record; renderTableShell(); }
+  }));
+  sidebar.querySelectorAll('[data-table-sort]').forEach(button=>button.addEventListener('click', ()=>{
+    TABLE_SORT = button.dataset.tableSort;
+    saveOptions(); renderTableShell();
   }));
 }
 function render(){ renderTableShell(); }
@@ -2364,7 +2378,7 @@ function gristOptionsApi(){ return (typeof grist!=='undefined' && grist.widgetAp
 function configPayload(){
   // Paramétrage réutilisable (sans linkTemplate, propre à chaque page)
   return { collapsed:[...FOLDED], order: ORDER, title: TITLE_KEY, subtitle: SUBTITLE_KEY, tags: TAGS_KEY, headerImage: HEADER_IMG,
-           reflistMode: RL_MODE, reflistCols: RL_COLS, link: LINK_KEY, buttons:[...BTN_FIELDS] };
+           reflistMode: RL_MODE, reflistCols: RL_COLS, link: LINK_KEY, buttons:[...BTN_FIELDS], tableSort: TABLE_SORT };
 }
 function applyConfigJson(text){
   let obj; try{ obj = JSON.parse(text); }catch(e){ toast('Config illisible (JSON invalide)'); return; }
@@ -2384,6 +2398,7 @@ function applyConfigJson(text){
 }
 function applyOptions(opts){
   if(!opts) return;
+  if(opts.tableSort==='table'||opts.tableSort==='alpha') TABLE_SORT = opts.tableSort;
   if(Array.isArray(opts.collapsed)) FOLDED = new Set(opts.collapsed);
   if(Array.isArray(opts.order)) ORDER = opts.order.slice();
   if('title' in opts) TITLE_KEY = opts.title || null;
@@ -2401,7 +2416,7 @@ async function saveOptions(){
   try{
     const api = gristOptionsApi();
     const payload = { collapsed:[...FOLDED], order: ORDER, title: TITLE_KEY, subtitle: SUBTITLE_KEY, tags: TAGS_KEY, headerImage: HEADER_IMG,
-              reflistMode: RL_MODE, reflistCols: RL_COLS, link: LINK_KEY, buttons:[...BTN_FIELDS], linkTemplate: LINK_TEMPLATE };
+          reflistMode: RL_MODE, reflistCols: RL_COLS, link: LINK_KEY, buttons:[...BTN_FIELDS], linkTemplate: LINK_TEMPLATE, tableSort: TABLE_SORT };
     if(api && api.setOptions) await api.setOptions(payload);
     else if(api && api.setOption){ for(const [k,v] of Object.entries(payload)) await api.setOption(k, v); }
   }catch(e){ console.warn('Sauvegarde des options impossible', e); }
