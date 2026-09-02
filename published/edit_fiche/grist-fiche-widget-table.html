@@ -81,6 +81,11 @@
   .table-empty{padding:12px 9px;color:var(--ink-faint);font-size:12px}
   .table-main{min-width:0}
   .table-toolbar{display:flex;align-items:center;gap:8px;padding:0 26px 4px;max-width:1180px;margin:0 auto}
+  .table-title{font-size:20px;font-weight:650;color:var(--ink);margin-right:auto;line-height:1.3}
+  .table-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .table-count{font-size:12px;color:var(--ink-soft);white-space:nowrap}
+  .table-search{width:190px;height:29px;padding:4px 9px;border:1px solid var(--line-strong);
+    border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-size:12px}
   .table-source{width:190px;height:29px;padding:3px 8px;border:1px solid var(--line-strong);
     border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-size:12px}
   .table-action{font:inherit;font-size:12px;padding:5px 9px;border:1px solid var(--line-strong);
@@ -93,6 +98,9 @@
     .table-sidebar{border-right:0;border-bottom:1px solid var(--line);padding:0 0 10px}
     .table-list{max-height:150px}
     .table-toolbar{padding:8px 14px 0;flex-wrap:wrap}
+    .table-title{width:100%;font-size:18px}
+    .table-tools{width:100%;justify-content:flex-start}
+    .table-search{flex:1;min-width:130px}
     .table-main .wrap{padding:18px 14px 30px}
   }
 
@@ -559,6 +567,7 @@ let TABLE_ID = null;
 let TABLE_SOURCE = null;
 let TABLE_ROWS = null;
 let TABLE_SORT = 'table';
+let TABLE_QUERY = '';
 let TABLE_REF = null;       // ref de la table courante dans _grist_Tables (pour les commentaires)
 let ALL_CELLS = null;       // cache de _grist_Cells (commentaires)
 let COMMENTS = [];          // commentaires de la ligne courante
@@ -1413,18 +1422,23 @@ function tableLabelAt(index){
 function renderTableShell(){
   const toolbar = $('#table-toolbar');
   const sidebar = $('#table-sidebar');
-  toolbar.innerHTML = `<span style="font-size:12px;color:var(--ink-soft)">Table : ${escapeHtml(TABLE_SOURCE||'—')}</span>
-    <button class="table-action" data-table-add ${TABLE_SOURCE?'':'disabled'}>＋ Ajouter</button>
-    <button class="table-action danger" data-table-delete ${CURRENT?'':'disabled'}>Supprimer</button>`;
+  const total = TABLE_ROWS?.id?.length || 0;
+  toolbar.innerHTML = `<div class="table-title">Édition de la table ${escapeHtml(TABLE_SOURCE||'—')}</div>
+    <div class="table-tools"><span class="table-count">${total} enregistrement${total>1?'s':''}</span>
+      <input class="table-search" type="search" value="${escapeHtml(TABLE_QUERY)}" placeholder="Rechercher…" aria-label="Rechercher dans la liste">
+      <button class="table-action" data-table-add ${TABLE_SOURCE?'':'disabled'}>＋ Ajouter</button>
+      <button class="table-action danger" data-table-delete ${CURRENT?'':'disabled'}>Supprimer</button></div>`;
   if(!TABLE_SOURCE || !TABLE_ROWS){
     sidebar.innerHTML = '<div class="table-empty">Aucune ligne à afficher.</div>';
   } else {
+    const query = TABLE_QUERY.trim().toLocaleLowerCase('fr');
     const order = TABLE_ROWS.id.map((id,i)=>({id,index:i,label:tableLabelAt(i)}));
     if(TABLE_SORT==='alpha') order.sort((a,b)=>a.label.localeCompare(b.label,'fr',{sensitivity:'base'}));
-    sidebar.innerHTML = `<div class="table-sidebar-head"><span class="table-sidebar-title">${escapeHtml(TABLE_SOURCE)} (${TABLE_ROWS.id.length})</span>
+    const visible = query ? order.filter(item=>item.label.toLocaleLowerCase('fr').includes(query)) : order;
+    sidebar.innerHTML = `<div class="table-sidebar-head">
         <button class="table-sort ${TABLE_SORT==='table'?'active':''}" data-table-sort="table" title="Ordre de la table" aria-label="Ordre de la table">↕</button>
         <button class="table-sort ${TABLE_SORT==='alpha'?'active':''}" data-table-sort="alpha" title="Ordre alphabétique" aria-label="Ordre alphabétique">A↕Z</button></div>
-      <div class="table-list">${order.map(item=>`<button class="table-row ${CURRENT&&CURRENT.id===item.id?'selected':''}" data-table-row="${item.id}" title="${escapeHtml(item.label)}">${escapeHtml(item.label)}</button>`).join('')}</div>`;
+      <div class="table-list">${visible.map(item=>`<button class="table-row ${CURRENT&&CURRENT.id===item.id?'selected':''}" data-table-row="${item.id}" title="${escapeHtml(item.label)}">${escapeHtml(item.label)}</button>`).join('') || '<div class="table-empty">Aucun résultat.</div>'}</div>`;
   }
   viewRoot = wrap;
   renderFiche();
@@ -1432,6 +1446,8 @@ function renderTableShell(){
   if(add) add.addEventListener('click', addTableRow);
   const del = toolbar.querySelector('[data-table-delete]');
   if(del) del.addEventListener('click', deleteTableRow);
+  const search = toolbar.querySelector('.table-search');
+  if(search) search.addEventListener('input', e=>{ TABLE_QUERY=e.target.value; renderTableShell(); const next=toolbar.querySelector('.table-search'); if(next){ next.focus(); next.setSelectionRange(TABLE_QUERY.length,TABLE_QUERY.length); } });
   sidebar.querySelectorAll('[data-table-row]').forEach(row=>row.addEventListener('click', ()=>{
     const record = TABLE_ROWS && TABLE_ROWS.id.map(Number).includes(Number(row.dataset.tableRow))
       ? tableRecordAt(TABLE_ROWS.id.findIndex(id=>Number(id)===Number(row.dataset.tableRow))) : null;
