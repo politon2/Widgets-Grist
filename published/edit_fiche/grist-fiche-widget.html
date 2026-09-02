@@ -701,6 +701,23 @@ function refDisplayLabel(target, id, label){
 function isBareRefDisplay(target, id, label){
   return String(label??'').trim() === `${target}[${Number(id)}]`;
 }
+function refRowId(target, value){
+  if(typeof value==='number' && Number.isInteger(value) && value>0) return value;
+  const match = String(value??'').trim().match(new RegExp(`^${target.replace(/[.*+?^${}()|[\\]\\]/g,'\\$&')}\\[(\\d+)\\]$`));
+  if(match) return Number(match[1]);
+  const opts = REFCACHE[target] || [];
+  const found = opts.find(o=>String(o.label)===String(value));
+  return found ? found.id : 0;
+}
+function refSelectHtml(k, target, value){
+  const selected = refRowId(target, value);
+  const opts = REFCACHE[target] || (typeof DEMO_REFS!=='undefined' ? DEMO_REFS[target] : []);
+  const options = opts.map(o=>`<option value="${o.id}" ${o.id===selected?'selected':''}>${escapeHtml(String(o.label))}</option>`).join('');
+  const fallback = selected>0 && !opts.some(o=>o.id===selected)
+    ? `<option value="${selected}" selected>Chargement…</option>` : '';
+  return `<select class="editor ref-select" data-ref-select="${escapeHtml(k)}" aria-label="${escapeHtml(META?.[k]?.label||k)}">
+    <option value="0" ${selected>0?'':'selected'}>— vide —</option>${fallback}${options}</select>`;
+}
 
 /* ---- Formatage des valeurs (mode lecture) ---- */
 function fmtDate(v,type){
@@ -1318,6 +1335,7 @@ function render(){
   wrap.appendChild(emptyEl);
   bindClicks();
   bindToolbar();
+  hydrateRefSelectors();
   hydrateAttachments();
 }
 
@@ -1444,6 +1462,21 @@ function bindToolbar(){
   if(det) det.addEventListener('toggle', ()=>{ foldOpen = det.open; });
 }
 
+async function hydrateRefSelectors(){
+  const selectors = [...wrap.querySelectorAll('[data-ref-select]')];
+  for(const sel of selectors){
+    const key = sel.dataset.refSelect;
+    const target = refTarget(META?.[key]?.type);
+    const visCol = META?.[key]?.visibleCol ? COLREF[META[key].visibleCol] : null;
+    const current = Number(CURRENT?.[key]);
+    const opts = await refOptions(target, visCol);
+    if(!sel.isConnected || editingKey || CURRENT?.[key]!==current) continue;
+    sel.innerHTML = `<option value="0">— vide —</option>` +
+      opts.map(o=>`<option value="${o.id}">${escapeHtml(String(o.label))}</option>`).join('');
+    sel.value = String(current>0 ? current : 0);
+  }
+}
+
 // Représentation textuelle simple d'une valeur (pour le sous-titre)
 function plainValue(k){
   const m=META?.[k]||{}; const t=m.type||'Text'; const kind=typeKind(t); const v=CURRENT[k];
@@ -1512,6 +1545,8 @@ function propRow(k){
     const target = refTarget(type);
     if(isEmptyRefValue(val)){            // référence vide (0 / null / sentinelle « Table[0] »)
       inner = (ph=true,'Vide');
+    } else if(!ro && refRowId(target, val)>0) {
+      inner = refSelectHtml(k, target, val);
     } else {
       let id = (typeof val==='number') ? val : null;
       if(id==null && typeof val==='string' && REFCACHE[target]){
@@ -1566,6 +1601,13 @@ function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
    Édition au clic
    ============================================================ */
 function bindClicks(){
+  wrap.querySelectorAll('[data-ref-select]').forEach(sel=>{
+    sel.addEventListener('click', e=> e.stopPropagation());
+    sel.addEventListener('change', ()=>{
+      const value = Number(sel.value);
+      commit(sel.dataset.refSelect, Number.isInteger(value) && value>0 ? value : 0);
+    });
+  });
   // Liens hypertexte : naviguer sans déclencher l'édition de la cellule
   wrap.querySelectorAll('.prop-val .lk, .prop-val .prop-btn').forEach(a=>{
     a.addEventListener('click', e=> e.stopPropagation());
