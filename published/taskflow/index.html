@@ -147,6 +147,10 @@ body { display: flex; flex-direction: column; background: var(--bg); }
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"/><line x1="3" y1="20" x2="21" y2="20"/><line x1="8" y1="17" x2="8" y2="20"/><line x1="16" y1="17" x2="16" y2="20"/></svg>
     Whiteboard
   </button>
+  <button class="tab" data-id="edition" onclick="go('edition')">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h5M8 16h8"/></svg>
+    Edition
+  </button>
 </nav>
 
 <iframe id="frame" allow="clipboard-read; clipboard-write"></iframe>
@@ -162,13 +166,15 @@ const URLS = {
   calendar:   BASE + 'calendar/?shell=1',
   projectView: BASE + 'projectView/?shell=1',
   whiteboard: BASE + 'whiteboard/?shell=1',
+  edition:    BASE + 'edition/?shell=1',
+  editionTable: BASE.replace('/taskflow/', '/edit_fiche/') + 'grist-fiche-widget-table.html?shell=1',
 };
 
 const frame    = document.getElementById('frame');
 const loadBar  = document.getElementById('loadBar');
 const skeleton = document.getElementById('skeleton');
 const skLabel  = document.getElementById('skLabel');
-const LABELS   = { dashboard:'Dashboard', kanban:'Kanban', gantt:'Gantt', calendar:'Calendar', projectView:'ProjectView', whiteboard:'Whiteboard' };
+const LABELS   = { dashboard:'Dashboard', kanban:'Kanban', gantt:'Gantt', calendar:'Calendar', projectView:'ProjectView', whiteboard:'Whiteboard', edition:'Edition', editionTable:'Edition de table' };
 let current    = null;
 
 // ── Transparent Grist relay ───────────────────────────────────────
