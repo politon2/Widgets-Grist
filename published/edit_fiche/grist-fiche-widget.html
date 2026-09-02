@@ -2158,7 +2158,7 @@ function commentsHtml(){
     return `<div class="cmt ${resolved?'resolved':''}">
         <div class="cmt-head">
           <span class="cmt-author">${escapeHtml(author||'—')}</span>
-          ${colLab?`<span class="cmt-col">${escapeHtml(colLab)}</span>`:''}
+          ${colLab?`<span class="cmt-col">${escapeHtml(colLab)} (libellé) </span>`:''}
           ${date?`<span class="cmt-date">${escapeHtml(date)}</span>`:''}
           ${resolved?`<span class="cmt-res">résolu</span>`:''}
         </div>
