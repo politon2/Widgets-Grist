@@ -1457,7 +1457,10 @@ async function addTableRow(){
 }
 async function deleteTableRow(){
   if(!TABLE_SOURCE || !CURRENT || !IN_GRIST) return;
-  if(!window.confirm('Supprimer cette ligne ?')) return;
+  const rowIndex = TABLE_ROWS?.id?.findIndex(id=>Number(id)===Number(CURRENT.id)) ?? -1;
+  const rowLabel = rowIndex>=0 ? tableLabelAt(rowIndex) : `Ligne ${CURRENT.id}`;
+  const confirmation = `Êtes-vous sûr de vouloir supprimer cette ligne ?\n\nTable : ${TABLE_SOURCE}\nLigne : ${rowLabel}`;
+  if(!window.confirm(confirmation)) return;
   try{
     await grist.docApi.applyUserActions([['RemoveRecord', TABLE_SOURCE, CURRENT.id]]);
     await reloadTableSource(null); toast('Ligne supprimée');
