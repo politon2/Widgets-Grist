@@ -194,7 +194,7 @@ window.addEventListener('message', event => {
 
 // ── Navigation ────────────────────────────────────────────────────
 function go(id, params = {}) {
-  if (id === current) return;
+  if (id === current && Object.keys(params).length === 0) return;
   current = id;
 
   // Highlight active tab

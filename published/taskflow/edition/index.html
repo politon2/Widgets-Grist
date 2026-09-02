@@ -55,7 +55,11 @@ h1{font-size:1.45rem;color:var(--primary);line-height:1.2}
 <script>
 function openTool(id, event){
   if(window.parent && typeof window.parent.go==='function'){
-    event.preventDefault(); window.parent.go(id); return false;
+    event.preventDefault();
+    const url = new URL(event.currentTarget.href, window.location.href);
+    const params = Object.fromEntries(url.searchParams.entries());
+    window.parent.go(id, params);
+    return false;
   }
   return true;
 }
