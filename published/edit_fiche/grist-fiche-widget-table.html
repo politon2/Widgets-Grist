@@ -2197,7 +2197,11 @@ async function commit(colId, value, opts){
   if(!IN_GRIST){ toast('Enregistré (démo)'); return; }
   try{
     if(NAV.length===0){
-      await grist.selectedTable.update({ id: CURRENT.id, fields: { [colId]: value } });
+      if(TABLE_SOURCE){
+        await grist.docApi.applyUserActions([['UpdateRecord', TABLE_SOURCE, CURRENT.id, { [colId]: value }]]);
+      }else{
+        await grist.selectedTable.update({ id: CURRENT.id, fields: { [colId]: value } });
+      }
     }else{
       await grist.docApi.applyUserActions([['UpdateRecord', ACTIVE_TABLE, CURRENT.id, { [colId]: value }]]);
     }
