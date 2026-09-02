@@ -568,6 +568,7 @@ let TABLE_SOURCE = null;
 let TABLE_ROWS = null;
 let TABLE_SORT = 'table';
 let TABLE_QUERY = '';
+const REQUESTED_TABLE = new URLSearchParams(window.location.search).get('table')?.trim() || '';
 let TABLE_REF = null;       // ref de la table courante dans _grist_Tables (pour les commentaires)
 let ALL_CELLS = null;       // cache de _grist_Cells (commentaires)
 let COMMENTS = [];          // commentaires de la ligne courante
@@ -2492,9 +2493,11 @@ function initGrist(){
 }
 
 async function initLinkedTable(){
-  if(!IN_GRIST || !grist.selectedTable?.getTableId) return;
+  if(!IN_GRIST) return;
   try{
-    const source = await grist.selectedTable.getTableId();
+    const source = REQUESTED_TABLE || (grist.selectedTable?.getTableId
+      ? await grist.selectedTable.getTableId()
+      : null);
     if(source && source!==TABLE_SOURCE) await loadTableSource(source);
     else if(!TABLE_SOURCE) render();
   }catch(e){ console.warn('Table source indisponible',e); render(); }
